@@ -29,6 +29,7 @@ Gui::Gui(const std::string& filename):
 	//big box
 	big_box.append(buttons_box);
 	m_area.set_size_request(taille_dessin);
+	m_area.set_expand(true);
 	area_box.append(m_area);
 	big_box.append(area_box);
 	
@@ -239,19 +240,16 @@ void Gui::on_button_step_clicked(){
 // default Model Framing and window parameters
 static Frame default_frame = {0, 500, 0, 500, 1.0, 500, 500}; 
 
-MyArea::MyArea()
-{
+MyArea::MyArea(){
 	set_draw_func(sigc::mem_fun(*this, &MyArea::on_draw)); //c quoi ca???
 	setFrame(default_frame);
 }
 
-MyArea::~MyArea()
-{
+MyArea::~MyArea(){
 }
 
 // defining the Model space frame to visualize in the window canvas
-void MyArea::setFrame(Frame f)
-{
+void MyArea::setFrame(Frame f){
 	if((f.xMin <= f.xMax) and (f.yMin <= f.yMax) and (f.height > 0))
 	{
 		f.asp = f.width/f.height;
@@ -261,8 +259,7 @@ void MyArea::setFrame(Frame f)
 		std::cout << "incorrect Model framing or window parameters" << std::endl;
 } 
 
-void MyArea::adjustFrame(int width, int height)
-{
+void MyArea::adjustFrame(int width, int height){
 	frame.width  = width;
 	frame.height = height;
 
@@ -296,8 +293,7 @@ void MyArea::adjustFrame(int width, int height)
 }
 
 static void orthographic_projection(const Cairo::RefPtr<Cairo::Context>& cr, 
-								    Frame frame)
-{
+								    Frame frame){
 	// déplace l'origine au centre de la fenêtre
 	cr->translate(frame.width/2, frame.height/2);
   
@@ -310,13 +306,12 @@ static void orthographic_projection(const Cairo::RefPtr<Cairo::Context>& cr,
 	cr->translate(-(frame.xMin + frame.xMax)/2, -(frame.yMin + frame.yMax)/2);
 }
 
-void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,const int height)
-{
+void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,const int height){
 	adjustFrame(width, height);
 	orthographic_projection(cr, frame);
 	graphic_set_context(cr);
 	
-	cr->set_source_rgb(255.0, 255.0, 255.0 );
+	cr->set_source_rgb(1.0, 1.0, 1.0 );
 	cr->paint();
 	
 	//centre de fenetre
