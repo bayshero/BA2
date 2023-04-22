@@ -1,301 +1,365 @@
-#include "gui.h"
+//GRAPHIC.CC, BENARAFA MANON: 100%/ GLASSEY ADELINE: 0%, V2
 #include <iostream>
-#include <gtkmm/filechooserdialog.h>
-#include "constantes.h"
-#include "graphic.h"
+#include <fstream>
+#include <vector>
+#include "simulation.h"
+#include "graphic_gui.h"
+#include "gui.h"
+
 using namespace std;
 
-Gui::Gui(const std::string& filename):
-	big_box(Gtk::Orientation::HORIZONTAL,2), 
-	general_box(Gtk::Orientation::HORIZONTAL,2), 
-	buttons_box(Gtk::Orientation::VERTICAL,2),
-	info_box(Gtk::Orientation::VERTICAL,2), 
-	general("General"), info("Info : nombre de..."),
-	button_exit("exit"), button_open("open"), button_save("save"),
-	button_start("start"), button_step("step")
-{
-	//initialisation simulation**
-	this->filename = filename;
-	if (!filename.empty()) { 
-		simu.lecture(filename.c_str()); //c_str renvoie un pointeur const char*
-		simu.error_check();
+static Frame default_frame = {0, 500, 0, 500, 1.0, 500, 500}; 
+
+
+Area::Area(){
+	setFrame(default_frame);
+}
+
+Area::~Area(){
+}
+
+void Area::setFrame(Frame f){
+	if((f.xMin <= f.xMax) and (f.yMin <= f.yMax) and (f.height > 0))
+	{
+		f.asp = f.width/f.height;
+		frame = f;
+	}else{
+		std::cout << "incorrect Model framing or window parameters" << std::endl;
 	}
+} 
+
+void Area::adjustFrame(){
+	Gtk::Allocation allocation = get_allocation();
+	const int width = allocation.get_width();
+	const int height = allocation.get_height();
 	
-	//interface***********************
-	set_child(big_box);
-	
-	//big box
-	big_box.append(buttons_box);
-	m_area.set_size_request(taille_dessin);
-	area_box.append(m_area);
-	big_box.append(area_box);
-	
-	//general box**
-	general_box.append(general);
-	
-	//info box**
-	info_box.append(info);
-	info_box.append(nbUpdate);
-	info_box.append(nbP);
-	info_box.append(nbRs);
-	info_box.append(nbRr);
-	info_box.append(nbNs);
-	info_box.append(nbNp);
-	info_box.append(nbNd);
-	info_box.append(nbNr);
-	
-	info.set_halign(Gtk::Align::START);
-	nbUpdate.set_halign(Gtk::Align::START);
-	nbP.set_halign(Gtk::Align::START);
-	nbRs.set_halign(Gtk::Align::START);
-	nbRr.set_halign(Gtk::Align::START);
-	nbNs.set_halign(Gtk::Align::START);
-	nbNp.set_halign(Gtk::Align::START);
-	nbNd.set_halign(Gtk::Align::START);
-	nbNr.set_halign(Gtk::Align::START);
-	
-	//buttons box**
-	buttons_box.append(general_box);
-	buttons_box.append(button_exit);
-	buttons_box.append(button_open);
-	buttons_box.append(button_save);
-	buttons_box.append(button_start);
-	buttons_box.append(button_step);
-	buttons_box.append(info_box);
-	
-	//fonctions appelées par les boutons
-	button_exit.signal_clicked().connect(sigc::mem_fun(*this,
-					     &Gui::on_button_exit_clicked));
-	button_open.signal_clicked().connect(sigc::mem_fun(*this,
-					     &Gui::on_button_open_clicked));
-	//button_save.signal_clicked().connect(sigc::mem_fun(*this,
-		//			     &Gui::on_button_save_clicked));
-	button_start.signal_clicked().connect(sigc::mem_fun(*this,
-					     &Gui::on_button_start_clicked));				     
-	button_step.signal_clicked().connect(sigc::mem_fun(*this,
-					     &Gui::on_button_step_clicked));				     				     
-	//mettre a jour les labels
-	update_infos();
+	frame.width  = width;
+	frame.height = height;
+
+    double new_aspect_ratio((double)width/height);
+    if( new_aspect_ratio > default_frame.asp){ 
+	    frame.yMax = default_frame.yMax;
+	    frame.yMin = default_frame.yMin;	
+	  
+	    double delta(default_frame.xMax - default_frame.xMin);
+	    double mid((default_frame.xMax + default_frame.xMin)/2);
+     
+	    frame.xMax = mid + 0.5*(new_aspect_ratio/default_frame.asp)*delta;
+	    frame.xMin = mid - 0.5*(new_aspect_ratio/default_frame.asp)*delta;		  	  
+    }else{ 
+	    frame.xMax = default_frame.xMax;
+	    frame.xMin = default_frame.xMin;
+	  	  
+ 	    double delta(default_frame.yMax - default_frame.yMin);
+	    double mid((default_frame.yMax + default_frame.yMin)/2);
+        
+	    frame.yMax = mid + 0.5*(default_frame.asp/new_aspect_ratio)*delta;
+	    frame.yMin = mid - 0.5*(default_frame.asp/new_aspect_ratio)*delta;		  	  
+    }
 }
 
-Gui::~Gui(){}
-
-void Gui::update_infos()
-{
-	std::stringstream s1, s2, s3, s4, s5, s6, s7, s8;
-    int nbUpdate_ = simu.GetRs().GetNbUpdate();
-    s1 << "mises à jour:" << nbUpdate_;
-    nbUpdate.set_text(s1.str());
-    
-    int nbP_ = simu.GetParticules().size();
-    s2 << "particules:" << nbP_;
-    nbP.set_text(s2.str());  
-    
-    int nbRs_ = simu.GetRs().GetNbRs();
-    s3 << "robots réparateurs en service:" << nbRs_;
-    nbRs.set_text(s3.str()); 
-
-    int nbRr_ = simu.GetRs().GetNbRr();
-    s4 << "robots réparateurs en réserve:" << nbRr_;
-    nbRr.set_text(s4.str()); 
-
-    int nbNs_ = simu.GetRs().GetNbNs();
-    s5 << "robots neutraliseurs en service:" << nbNs_;
-    nbNs.set_text(s5.str());
-    
-    int nbNp_ = simu.GetRs().GetNbNp();
-    s6 << "robots neutraliseurs en panne:" << nbNp_;
-    nbNp.set_text(s6.str()); 
-    
-    int nbNd_ = simu.GetRs().GetNbNd();
-    s7 << "robots neutraliseurs détruits:" << nbNd_;
-    nbNd.set_text(s7.str()); 
-    
-    int nbNr_ = simu.GetRs().GetNbNr();
-    s8 << "robots neutraliseurs en réserve:" << nbNr_;
-    nbNr.set_text(s8.str());  
-      
+static void orthographic_projection(const Cairo::RefPtr<Cairo::Context>& cr, 
+									Frame frame){
+	cr->translate(frame.width/2, frame.height/2);
+	cr->scale(frame.width/(frame.xMax - frame.xMin), 
+             -frame.height/(frame.yMax - frame.yMin));
+  
+	cr->translate(-(frame.xMin + frame.xMax)/2, -(frame.yMin + frame.yMax)/2);
 }
 
-void Gui::on_button_exit_clicked(){
-    hide();
+void Area::refresh(){
+	auto win = get_window();
+	if(win){
+		Gdk::Rectangle r(0,0, get_allocation().get_width(),
+							get_allocation().get_height());
+		win->invalidate_rect(r,false);
+	}
 }
 
-void Gui::on_button_open_clicked() {
-    auto dialog = new Gtk::FileChooserDialog("Please choose a file",
-								    Gtk::FileChooser::Action::OPEN);
-    dialog->set_transient_for(*this);
-	dialog->set_modal(true);
-	dialog->signal_response().connect(sigc::bind(sigc::mem_fun(
-				*this, &Gui::on_file_dialog_response_open), dialog));
+bool Area::on_draw(const Cairo::RefPtr<Cairo::Context>& cr){
+	adjustFrame();
+	orthographic_projection(cr, frame);	
+	graphic_set_context(cr);
+	cr->set_source_rgb(0.0, 0.0, 0.0);
+	cr->paint();
 	
-    // Add response buttons to the dialog
-    dialog->add_button("_Cancel", Gtk::ResponseType::CANCEL);
-    dialog->add_button("_Open", Gtk::ResponseType::OK);
-    
-    //filters
-    auto filter_text = Gtk::FileFilter::create();
-	filter_text->set_name("Text files");
-	filter_text->add_mime_type("text/plain");
-	dialog->add_filter(filter_text);
-
-    // Show the dialog
-    dialog->show();
+	graphic_empty_world();
+	draw_world();
+	return true;
 }
 
-void Gui::on_file_dialog_response_open(int response_id, Gtk::FileChooserDialog* dialog) {
-    // Handle the response
-    switch (response_id) {
-        case Gtk::ResponseType::OK:
-        {
-            std::string new_filename = dialog->get_file()->get_path();
-            Simulation new_simu;
-            new_simu.lecture(new_filename.c_str());
-            new_simu.error_check();
-            simu = new_simu;
-            filename = new_filename;
-            update_infos();
-            break;
-        }
-        case Gtk::ResponseType::CANCEL:
-        {
-			std::cout << "Cancel clicked." << std::endl;
+Fenetre::Fenetre() :
+	m_Box(Gtk::ORIENTATION_HORIZONTAL,10),
+	m_Box_Left(Gtk::ORIENTATION_VERTICAL, 10),
+	m_Box_Right(Gtk::ORIENTATION_HORIZONTAL, 10),
+	m_Box_Top(Gtk::ORIENTATION_VERTICAL, 10),
+	m_Box_Middle(Gtk::ORIENTATION_VERTICAL, 10),
+	m_Box_Bottom(Gtk::ORIENTATION_VERTICAL, 10),  
+ 
+	Button_exit("Exit"),
+	Button_open("Open"),
+	Button_save("Save"),
+	Button_start("Start"),
+	Button_step("Step"),
+	Button_previous("Previous"),
+	Button_next("Next"),
+  
+	m_Frame_Top("General"),
+	m_Frame_Middle("Info"),
+	m_Frame_Bottom("Fourmiliere"),
+	m_Label_nbn("Nb food= " + get_nourriture_string()),
+	m_Label_infoF("None selected"),
+  
+	i(0),
+	f_selected(false),
+	timer_added(false),
+	disconnect(false),
+	timeout_value(100){
+		
+	set_border_width(0);
+
+	add(m_Box);
+ 
+	m_Box.pack_start(m_Box_Left,false,false);
+	m_Box.pack_start(m_Box_Right);
+  
+	m_Area.set_size_request(200,200);
+	m_Box_Right.pack_start(m_Area);
+  
+	m_Frame_Top.add(m_Box_Top);
+	m_Box_Left.pack_start(m_Frame_Top);
+  
+	m_Frame_Middle.add(m_Box_Middle);
+	m_Box_Middle.pack_start(m_Label_nbn);
+	m_Box_Left.pack_start(m_Frame_Middle);
+  
+	m_Frame_Bottom.add(m_Box_Bottom);
+	m_Box_Left.pack_start(m_Frame_Bottom);
+  
+	m_Box_Top.set_border_width(10);
+	m_Box_Middle.set_border_width(10);
+	m_Box_Bottom.set_border_width(10); 
+  
+	m_Box_Top.pack_start(Button_exit);
+	m_Box_Top.pack_start(Button_open);
+	m_Box_Top.pack_start(Button_save);
+	m_Box_Top.pack_start(Button_start);
+	m_Box_Top.pack_start(Button_step);
+  
+	m_Box_Bottom.pack_start(Button_previous);
+	m_Box_Bottom.pack_start(Button_next);
+	m_Box_Bottom.pack_start(m_Label_infoF);
+  
+	Button_exit.signal_clicked().connect(sigc::mem_fun(*this,
+              &Fenetre::on_button_clicked_exit) );
+	Button_open.signal_clicked().connect(sigc::mem_fun(*this,
+              &Fenetre::on_button_clicked_open) );
+	Button_save.signal_clicked().connect(sigc::mem_fun(*this,
+              &Fenetre::on_button_clicked_save) );     
+	Button_start.signal_clicked().connect(sigc::mem_fun(*this,
+              &Fenetre::on_button_clicked_start) );
+	Button_step.signal_clicked().connect(sigc::mem_fun(*this,
+              &Fenetre::on_button_clicked_step) );              
+	Button_previous.signal_clicked().connect(sigc::mem_fun(*this,
+              &Fenetre::on_button_clicked_previous) ); 
+	Button_next.signal_clicked().connect(sigc::mem_fun(*this,
+              &Fenetre::on_button_clicked_next) );               
+	show_all_children();
+}
+
+Fenetre::~Fenetre(){
+}
+
+void Fenetre::on_button_clicked_exit(){
+	exit(EXIT_FAILURE);
+}
+
+void Fenetre::on_button_clicked_open(){
+	Gtk::FileChooserDialog dialog("Please choose a file", 
+				Gtk::FILE_CHOOSER_ACTION_OPEN);
+	dialog.set_transient_for(*this);
+
+	dialog.add_button("_Cancel", Gtk::RESPONSE_CANCEL);
+	dialog.add_button("_Open", Gtk::RESPONSE_OK);
+
+	int result = dialog.run();
+  
+	switch(result){
+		case(Gtk::RESPONSE_OK):{
+			std::string filename = dialog.get_filename();
+			clear_simulation();
+			reset();
+			lecture(filename);
+			m_Area.refresh();
 			break;
 		}
-
-        default:
-            // Do nothing if the user cancels the dialog
-            break;
-    }
-
-    // Delete the dialog
-    delete dialog;
-}
-
-/*
-void Gui::on_button_save_clicked() {
-    auto dialog = new Gtk::FileChooserDialog("Save file", Gtk::FileChooser::Action::SAVE);
-
-    // Add response buttons to the dialog
-    dialog->set_transient_for(*this);
-    dialog->add_button("_Cancel", Gtk::ResponseType::CANCEL);
-    dialog->add_button("_Save", Gtk::ResponseType::OK);
-    dialog->signal_response().connect(sigc::bind(sigc::mem_fun(
-				*this, &Gui::on_file_dialog_response_save), dialog));
-
-    //int result = dialog->show();
-
-    // Handle the response
-    switch (result) {
-        case Gtk::ResponseType::OK:
-        {
-            std::string save_filename = dialog->get_file()->get_path();
-
-            // Save the updated values to the chosen file
-            simu.save(save_filename.c_str());
-
-            break;
-        }
-        case Gtk::ResponseType::CANCEL:
-        default:
-            // Do nothing if the user cancels the dialog
-            break;
-    }
-}
-
-void Gui::on_file_dialog_response_save(int response_id, Gtk::FileChooserDialog* dialog) {
-    // Handle the response
-    switch (response_id) {
-        case Gtk::ResponseType::OK:
-        {
-            
-        }
-        case Gtk::ResponseType::CANCEL:
-        {
-			std::cout << "Cancel clicked." << std::endl;
+		case(Gtk::RESPONSE_CANCEL):{
 			break;
 		}
-
-        default:
-            // Do nothing if the user cancels the dialog
-            break;
-    }
-
-    // Delete the dialog
-    delete dialog;
+		default:{
+			break;
+		}
+	}
 }
-*/
+void Fenetre::reset(){
+	i=0;
+	f_selected=false;
+	m_Label_infoF.set_text("None selected");
+	if(timer_added){
+		std::cout << "manually disconnecting the timer " << std::endl;
+		disconnect  = true;   
+		timer_added = false;
+		Button_start.set_label("Start");
+	}		
+}
 
-void Gui::on_button_start_clicked(){
+void Fenetre::on_button_clicked_save(){
+	Gtk::FileChooserDialog dialog("Please choose a file",
+          Gtk::FILE_CHOOSER_ACTION_SAVE);
+	dialog.set_transient_for(*this);
+
+	dialog.add_button("_Cancel", Gtk::RESPONSE_CANCEL);
+	dialog.add_button("_Save", Gtk::RESPONSE_OK);
+
+	int result = dialog.run();
+  
+	switch(result){
+		case(Gtk::RESPONSE_OK):{
+			std::string filename = dialog.get_filename();
+			save_simulation(filename);
+			break;
+		}
+		case(Gtk::RESPONSE_CANCEL):{
+			break;
+		}
+		default:{
+			break;
+		}
+	}
+}
+
+void Fenetre::on_button_clicked_start(){
+	if(not timer_added){	  
+		Glib::signal_timeout().connect( sigc::mem_fun(*this, &Fenetre::on_timeout),
+										  timeout_value );
+		timer_added = true;
+		std::cout << "Timer added" << std::endl;
+		Button_start.set_label("Stop");
+	}else{
+		std::cout << "manually disconnecting the timer " << std::endl;
+		disconnect  = true;   
+		timer_added = false;
+		Button_start.set_label("Start");
+	}		
+}
+
+void Fenetre::on_button_clicked_step(){
+	if(not timer_added){
+		on_timeout();
+	}
+}
+
+void Fenetre::on_button_clicked_previous(){
+	unsigned int nbf(get_nbF());
+	vector<string>info;
+	if(nbf==0){
+		m_Label_infoF.set_text("None selected");
+		f_selected=false;
+		return;
+	}
+	if(f_selected==false){
+		i=nbf-1;
+		info=get_fourmiliere_string(i);
+		string si = to_string(i);
+		m_Label_infoF.set_text("id: "+si+"\nTotal food: "+info[0]+"\n\n"
+							+"nbC: "+info[1]+"\nnbD: "+ info[2]+"\nnbP: "+ info[3]);
+		f_selected=true;
+		return;
+	}
+	if(i==0){
+		m_Label_infoF.set_text("None selected");
+		f_selected=false;
+	}else{
+		i-=1;
+		info=get_fourmiliere_string(i);
+		string si = to_string(i);
+		m_Label_infoF.set_text("id: "+si+"\nTotal food: "+info[0]+"\n\n"
+							+"nbC: "+info[1]+"\nnbD: "+ info[2]+"\nnbP: "+ info[3]);
+	}
+}
+
+void Fenetre::on_button_clicked_next(){
+	unsigned int nbf(get_nbF());
+	if(nbf==0){
+		m_Label_infoF.set_text("None selected");
+		f_selected=false;
+		return;
+	}
+	vector<string>info;
+		
+	if(f_selected==false){
+		i=0;
+		info=get_fourmiliere_string(i);
+		m_Label_infoF.set_text("id: 0\nTotal food: "+info[0]+"\n\n"
+							+"nbC: "+info[1]+"\nnbD: "+ info[2]+"\nnbP: "+ info[3]);
+		f_selected=true;
+		return;
+	}
+	if(i==nbf-1){
+		m_Label_infoF.set_text("None selected");
+		f_selected=false;
+		return;
+	}else{
+		i+=1;
+		string si = to_string(i);
+		info=get_fourmiliere_string(i);
+		m_Label_infoF.set_text("id: "+si+"\nTotal food: "+info[0]+"\n\n"
+							+"nbC: "+info[1]+"\nnbD: "+ info[2]+"\nnbP: "+ info[3]);
+	}
+}
+
+bool Fenetre::on_timeout(){
+	static unsigned int val(1);
+	if(disconnect){
+		disconnect = false; 
+		return false; 
+	}
+	std::cout << "This is simulation update number : " << val << std::endl;
+	++val; 
+	maj();
+	m_Label_nbn.set_text("Nb food= " + get_nourriture_string());
 	
+	unsigned int nbf(get_nbF());
+	if(nbf and f_selected){
+		vector<string>info(get_fourmiliere_string(i));
+		m_Label_infoF.set_text("id: 0\nTotal food: "+info[0]+"\n\n"
+			+"nbC: "+info[1]+"\nnbD: "+ info[2]+"\nnbP: "+ info[3]);
+	}else{
+		m_Label_infoF.set_text("None selected");
+	}
+	m_Area.refresh();
+	return true; 
 }
 
-void Gui::on_button_step_clicked(){
-	
-}	
-
-MyArea::MyArea()
-{
-	set_draw_func(sigc::mem_fun(*this, &MyArea::on_draw));
-}
-
-MyArea::~MyArea()
-{
-}
-
-void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height)
-{
-	cr->set_source_rgb(0.92, 0.0, 0.0);
-	// E
-	cr->set_line_width(58.0); //~(7/6)50
-	cr->move_to(50, 50);
-	cr->line_to(50, 150);
-	cr->stroke();
-	cr->move_to(50, 200);
-	cr->line_to(50, 300);
-	cr->stroke();
-	cr->set_line_width(50.0);
-	cr->move_to(50, 275);
-	cr->line_to(194, 275);
-	cr->stroke();
-	cr->move_to(79, 175);//E milieu
-	cr->line_to(185, 175);
-	cr->stroke();
-	cr->move_to(50, 75);
-	cr->line_to(194, 75);
-	cr->stroke();
-	//P
-	cr->move_to(250, 50);
-	cr->line_to(250, 300);
-	cr->stroke();
-	cr->move_to(275, 75);
-	cr->line_to(325, 75);
-	cr->stroke();
-	cr->move_to(275, 175);
-	cr->line_to(325, 175);
-	cr->stroke();
-	cr->arc(325, 125, 50, -M_PI/2, M_PI/2);
-	cr->stroke();
-	// F
-	cr->set_line_width(58.0); //~(7/6)50
-	cr->move_to(450, 50);
-	cr->line_to(450, 150);
-	cr->stroke();
-	cr->move_to(450, 200);
-	cr->line_to(450, 300);
-	cr->stroke();
-	cr->set_line_width(50.0);
-	cr->move_to(479, 175);//F milieu
-	cr->line_to(585, 175);
-	cr->stroke();
-	cr->move_to(450, 75);
-	cr->line_to(594, 75);
-	cr->stroke();
-	//L
-	cr->move_to(650, 50);
-	cr->line_to(650, 300);
-	cr->stroke();
-	cr->move_to(650, 275);
-	cr->line_to(790, 275);	
-	cr->stroke();
+bool Fenetre::on_key_press_event(GdkEventKey * key_event){
+	if(key_event->type == GDK_KEY_PRESS){
+		switch(gdk_keyval_to_unicode(key_event->keyval)){
+			case 's':
+				on_button_clicked_start();
+				break;
+			case '1':
+				on_button_clicked_step();
+				break;
+			case 'n':
+				on_button_clicked_next();
+				break;
+			case 'p':
+				on_button_clicked_previous();
+				break;
+			case 'q':
+				on_button_clicked_exit();
+				break;
+		}
+	}
+	return Gtk::Window::on_key_press_event(key_event);
 }
