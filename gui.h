@@ -13,6 +13,7 @@
 #include "graphic.h"
 #include <string>
 
+
 class Gui : public Gtk::Window
 {
 public:
@@ -44,18 +45,20 @@ std::string informations();
 
 #endif
 
-#include <gtkmm/drawingarea.h>
+
 #ifndef GRAPHIC_H
 #define GRAPHIC_H
+#include <gtkmm/drawingarea.h>
 class MyArea : public Gtk::DrawingArea
 {
 public:
-  MyArea();
-  virtual ~MyArea();
+	MyArea();
+	virtual ~MyArea();
 
 protected:
-  void on_draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height);
+	void on_draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height);
 };
 
 
 #endif
+

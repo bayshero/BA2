@@ -245,57 +245,7 @@ MyArea::~MyArea()
 
 void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height)
 {
-	cr->set_source_rgb(0.92, 0.0, 0.0);
-	// E
-	cr->set_line_width(58.0); //~(7/6)50
-	cr->move_to(50, 50);
-	cr->line_to(50, 150);
-	cr->stroke();
-	cr->move_to(50, 200);
-	cr->line_to(50, 300);
-	cr->stroke();
-	cr->set_line_width(50.0);
-	cr->move_to(50, 275);
-	cr->line_to(194, 275);
-	cr->stroke();
-	cr->move_to(79, 175);//E milieu
-	cr->line_to(185, 175);
-	cr->stroke();
-	cr->move_to(50, 75);
-	cr->line_to(194, 75);
-	cr->stroke();
-	//P
-	cr->move_to(250, 50);
-	cr->line_to(250, 300);
-	cr->stroke();
-	cr->move_to(275, 75);
-	cr->line_to(325, 75);
-	cr->stroke();
-	cr->move_to(275, 175);
-	cr->line_to(325, 175);
-	cr->stroke();
-	cr->arc(325, 125, 50, -M_PI/2, M_PI/2);
-	cr->stroke();
-	// F
-	cr->set_line_width(58.0); //~(7/6)50
-	cr->move_to(450, 50);
-	cr->line_to(450, 150);
-	cr->stroke();
-	cr->move_to(450, 200);
-	cr->line_to(450, 300);
-	cr->stroke();
-	cr->set_line_width(50.0);
-	cr->move_to(479, 175);//F milieu
-	cr->line_to(585, 175);
-	cr->stroke();
-	cr->move_to(450, 75);
-	cr->line_to(594, 75);
-	cr->stroke();
-	//L
-	cr->move_to(650, 50);
-	cr->line_to(650, 300);
-	cr->stroke();
-	cr->move_to(650, 275);
-	cr->line_to(790, 275);	
-	cr->stroke();
+	cr->set_source_rgb(255.0, 255.0, 255.0 );
+	cr->paint();
+	empty_world(cr, taille_dessin);
 }
