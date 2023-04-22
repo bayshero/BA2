@@ -15,7 +15,7 @@ void graphic_set_context(const Cairo::RefPtr<Cairo::Context>& cr){
 void empty_world(unsigned int taille) {
     // Set line width and color
     (*ptcr)->set_line_width(1.0);
-    (*ptcr)->set_source_rgb(0.0, 0.0, 0.0); //couleur bordure du monde
+    (*ptcr)->set_source_rgb(0.01, 0.01, 0.01); //couleur bordure du monde
 
     // Draw the border rectangle
     (*ptcr)->rectangle(0, 0, taille, taille);
