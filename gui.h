@@ -56,7 +56,7 @@ public:
 	virtual ~MyArea();
 
 protected:
-	void on_draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height);
+	void on_draw(const Cairo::RefPtr<Cairo::Context>& cr, const int width, const int height);
 };
 
 

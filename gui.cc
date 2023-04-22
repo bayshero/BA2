@@ -243,9 +243,17 @@ MyArea::~MyArea()
 {
 }
 
-void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height)
+void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,const int height)
 {
+	graphic_set_context(cr);
+	
 	cr->set_source_rgb(255.0, 255.0, 255.0 );
 	cr->paint();
-	empty_world(cr, taille_dessin);
+	
+	//centre de fenetre
+	//int xc, yc;
+//	xc = width / 2;
+	//yc = height / 2;
+	
+	empty_world(taille_dessin);
 }
