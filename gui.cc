@@ -5,6 +5,8 @@
 #include "graphic.h"
 using namespace std;
 
+
+
 Gui::Gui(const std::string& filename):
 	big_box(Gtk::Orientation::HORIZONTAL,2), 
 	general_box(Gtk::Orientation::HORIZONTAL,2), 
@@ -234,17 +236,84 @@ void Gui::on_button_step_clicked(){
 	
 }	
 
+// default Model Framing and window parameters
+static Frame default_frame = {0, 500, 0, 500, 1.0, 500, 500}; 
+
 MyArea::MyArea()
 {
-	set_draw_func(sigc::mem_fun(*this, &MyArea::on_draw));
+	set_draw_func(sigc::mem_fun(*this, &MyArea::on_draw)); //c quoi ca???
+	setFrame(default_frame);
 }
 
 MyArea::~MyArea()
 {
 }
 
+// defining the Model space frame to visualize in the window canvas
+void MyArea::setFrame(Frame f)
+{
+	if((f.xMin <= f.xMax) and (f.yMin <= f.yMax) and (f.height > 0))
+	{
+		f.asp = f.width/f.height;
+		frame = f;
+	}
+	else
+		std::cout << "incorrect Model framing or window parameters" << std::endl;
+} 
+
+void MyArea::adjustFrame(int width, int height)
+{
+	frame.width  = width;
+	frame.height = height;
+
+	// Preventing distorsion by adjusting the frame (cadrage)
+	// to have the same proportion as the graphical area
+	
+    // use the reference framing as a guide for preventing distortion
+    double new_aspect_ratio((double)width/height);
+    if( new_aspect_ratio > default_frame.asp)
+    { // keep yMax and yMin. Adjust xMax and xMin
+	    frame.yMax = default_frame.yMax ;
+	    frame.yMin = default_frame.yMin ;	
+	  
+	    double delta(default_frame.xMax - default_frame.xMin);
+	    double mid((default_frame.xMax + default_frame.xMin)/2);
+        // the new frame is centered on the mid-point along X
+	    frame.xMax = mid + 0.5*(new_aspect_ratio/default_frame.asp)*delta ;
+	    frame.xMin = mid - 0.5*(new_aspect_ratio/default_frame.asp)*delta ;		  	  
+    }
+    else
+    { // keep xMax and xMin. Adjust yMax and yMin
+	    frame.xMax = default_frame.xMax ;
+	    frame.xMin = default_frame.xMin ;
+	  	  
+ 	    double delta(default_frame.yMax - default_frame.yMin);
+	    double mid((default_frame.yMax + default_frame.yMin)/2);
+        // the new frame is centered on the mid-point along Y
+	    frame.yMax = mid + 0.5*(default_frame.asp/new_aspect_ratio)*delta ;
+	    frame.yMin = mid - 0.5*(default_frame.asp/new_aspect_ratio)*delta ;		  	  
+    }
+}
+
+static void orthographic_projection(const Cairo::RefPtr<Cairo::Context>& cr, 
+								    Frame frame)
+{
+	// déplace l'origine au centre de la fenêtre
+	cr->translate(frame.width/2, frame.height/2);
+  
+	// normalise la largeur et hauteur aux valeurs fournies par le cadrage
+	// ET inverse la direction de l'axe Y
+	cr->scale(frame.width/(frame.xMax - frame.xMin), 
+             -frame.height/(frame.yMax - frame.yMin));
+  
+	// décalage au centre du cadrage
+	cr->translate(-(frame.xMin + frame.xMax)/2, -(frame.yMin + frame.yMax)/2);
+}
+
 void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,const int height)
 {
+	adjustFrame(width, height);
+	orthographic_projection(cr, frame);
 	graphic_set_context(cr);
 	
 	cr->set_source_rgb(255.0, 255.0, 255.0 );

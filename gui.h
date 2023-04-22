@@ -12,6 +12,34 @@
 #include "simulation.h"
 #include "graphic.h"
 #include <string>
+#include <gtkmm/drawingarea.h>
+
+struct Frame // Model Framing and window parameters
+{
+	double xMin; // frame parameters
+	double xMax;
+	double yMin;
+	double yMax;
+	double asp;  // frame aspect ratio
+	int height;  // window height
+	int width;   // window width
+};
+
+
+
+class MyArea : public Gtk::DrawingArea
+{
+public:
+	MyArea();
+	virtual ~MyArea();
+	void setFrame(Frame x);
+	void adjustFrame(int width, int height);
+
+protected:
+	void on_draw(const Cairo::RefPtr<Cairo::Context>& cr, const int width, const int height);
+private:
+	Frame frame;
+};
 
 
 class Gui : public Gtk::Window
@@ -43,22 +71,9 @@ protected:
 
 std::string informations();
 
-#endif
-
-
-#ifndef GRAPHIC_H
-#define GRAPHIC_H
-#include <gtkmm/drawingarea.h>
-class MyArea : public Gtk::DrawingArea
-{
-public:
-	MyArea();
-	virtual ~MyArea();
-
-protected:
-	void on_draw(const Cairo::RefPtr<Cairo::Context>& cr, const int width, const int height);
-};
 
 
 #endif
+
+
 
