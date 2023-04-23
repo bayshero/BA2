@@ -70,6 +70,11 @@ public :
 	bool superposition_p_r_reparateur(const Particule& r) const;
 };
 
+void draw_robot_rep(const R_reparateur& r);
+void draw_robot_neutr(const R_neutraliseur& r);
+void draw_robot_spatial(const R_spatial& r);
+
+
 #endif	
 		
 	

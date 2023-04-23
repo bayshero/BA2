@@ -170,4 +170,16 @@ bool R_spatial::rs_in_domain() const{
 	}
 }
 
+void draw_robot_rep(const R_reparateur& r){
+	draw_circle_rep(r.GetCircle());
+}
+
+
+void draw_robot_neutr(const R_neutraliseur& r){
+	draw_circle_neutr(r.GetCircle());
+}
+
+void draw_robot_spatial(const R_spatial& r){
+	draw_circle_spatial(r.GetCircle());
+}
 

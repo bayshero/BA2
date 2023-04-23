@@ -33,13 +33,17 @@ public :
 	R_spatial GetRs() const;
 	void fin_succes();
 	void save(const char* save_filename);
+	static vector<Particule> particules;
+	static vector<R_neutraliseur> robots_neutr;
+	static vector<R_reparateur> robots_rep;
+	static R_spatial rs;
 private :
-	vector<Particule> particules;
-	R_spatial rs;	
-	vector<R_reparateur> robots_rep;
-	vector<R_neutraliseur> robots_neutr;
+	
+			
 	bool bool_error; //false si il y a une erreur détectée dans la simulation
 };
+
+void draw_world();
 
 #endif
 

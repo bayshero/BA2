@@ -3,6 +3,7 @@
 #include <gtkmm/filechooserdialog.h>
 #include "constantes.h"
 #include "graphic.h"
+#include "simulation.h"
 using namespace std;
 
 
@@ -29,7 +30,7 @@ Gui::Gui(const std::string& filename):
 	//big box
 	big_box.append(buttons_box);
 	m_area.set_size_request(taille_dessin);
-	m_area.set_expand(true);
+	m_area.set_expand(true); //super cool a fixer distortion
 	area_box.append(m_area);
 	big_box.append(area_box);
 	
@@ -240,8 +241,9 @@ void Gui::on_button_step_clicked(){
 // default Model Framing and window parameters
 static Frame default_frame = {0, 500, 0, 500, 1.0, 500, 500}; 
 
+
 MyArea::MyArea(){
-	set_draw_func(sigc::mem_fun(*this, &MyArea::on_draw)); //c quoi ca???
+	set_draw_func(sigc::mem_fun(*this, &MyArea::on_draw));   
 	setFrame(default_frame);
 }
 
@@ -305,14 +307,60 @@ static void orthographic_projection(const Cairo::RefPtr<Cairo::Context>& cr,
 	// décalage au centre du cadrage
 	cr->translate(-(frame.xMin + frame.xMax)/2, -(frame.yMin + frame.yMax)/2);
 }
+/*
+#include <pango/pangocairo.h>//temporary
+
+void draw_axes(const Cairo::RefPtr<Cairo::Context>& cr, Frame frame) {//temporary
+    // Save the current transformation matrix
+    cr->save();
+
+    // Set up the orthographic projection
+    orthographic_projection(cr, frame);
+
+    // Set line width and color for the axes
+    cr->set_line_width(1.0);
+    cr->set_source_rgb(0.0, 0.0, 0.0); // Black
+
+    // Draw the X axis
+    cr->move_to(frame.xMin, 0.0);
+    cr->line_to(frame.xMax, 0.0);
+
+    // Draw the Y axis
+    cr->move_to(0.0, frame.yMin);
+    cr->line_to(0.0, frame.yMax);
+
+    // Stroke the axes
+    cr->stroke();
+
+    // Draw labels for the axes using Pango
+    Glib::RefPtr<Pango::Layout> layout = Pango::Layout::create(cr);
+    layout->set_font_description(Pango::FontDescription("Arial Bold 10"));
+
+    // Label for the X axis
+    layout->set_text("X");
+    cr->move_to(frame.xMax + 5, -15);
+    layout->show_in_cairo_context(cr);
+
+    // Label for the Y axis
+    layout->set_text("Y");
+    cr->move_to(5, frame.yMax - 5);
+    layout->show_in_cairo_context(cr);
+
+    // Restore the transformation matrix
+    cr->restore();
+}
+*/
+
 
 void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,const int height){
 	adjustFrame(width, height);
 	orthographic_projection(cr, frame);
 	graphic_set_context(cr);
 	
+	
 	cr->set_source_rgb(1.0, 1.0, 1.0 );
 	cr->paint();
+	//  draw_axes(cr, frame);
 	
 	//centre de fenetre
 	//int xc, yc;
@@ -320,4 +368,5 @@ void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,con
 	//yc = height / 2;
 	
 	empty_world(taille_dessin);
+	draw_world();
 }

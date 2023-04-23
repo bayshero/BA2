@@ -20,6 +20,11 @@
 
 using namespace std;
 
+vector<Particule> Simulation::particules;
+vector<R_reparateur> Simulation::robots_rep;
+vector<R_neutraliseur> Simulation::robots_neutr;
+R_spatial Simulation::rs;
+
 //lit le fichier text reçu 
 void Simulation::lecture(const char* file_name){	
 	string ligne;
@@ -222,6 +227,28 @@ void Simulation::save(const char* save_filename) {
 
     output_file.close();
 }
+
+
+void draw_world(){
+    for (unsigned int i(0); i<Simulation::particules.size(); ++i){
+        draw_particule(Simulation::particules[i]);
+    }
+    for (unsigned int j(0); j<Simulation::robots_neutr.size(); ++j){
+		draw_robot_neutr(Simulation::robots_neutr[j]);
+	}
+	for (unsigned int k(0); k<Simulation::robots_rep.size(); ++k){
+		draw_robot_rep(Simulation::robots_rep[k]);
+	}
+	draw_robot_spatial(Simulation::rs);
+}
+
+
+
+
+	
+
+	
+
 
 
 

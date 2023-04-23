@@ -71,7 +71,7 @@ protected:
 
 std::string informations();
 
-
+//void draw_axes(const Cairo::RefPtr<Cairo::Context>& cr, Frame frame);
 
 #endif
 

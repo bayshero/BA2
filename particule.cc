@@ -64,3 +64,7 @@ bool Particule::superposition_p(const Particule& p1) const{
 	}
 	return true;
 }
+
+void draw_particule(const Particule& p){
+	draw_square(p.GetSquare());
+}
