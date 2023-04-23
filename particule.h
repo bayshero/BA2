@@ -21,4 +21,6 @@ public:
 	bool superposition_p(const Particule& p1) const;
 };
 
+void draw_particule(const Particule& p);
+
 #endif

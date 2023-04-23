@@ -1,14 +1,17 @@
-#ifndef GRAPHIC_H_INCLUDED
-#define GRAPHIC_H_INCLUDED
+#ifndef GTKMM_EXAMPLE_MYAREA_H
+#define GTKMM_EXAMPLE_MYAREA_H
 
-void graphic_empty_world();
-void set_color(int indice);
-void set_color_light(int indice);
-void fill_unitsquare(double x, double y, int indice);
-void fill_diamond(double x, double y);
-void thin_square(double x, double y, double size,int indice);
-void thick_line(double x, double y, double size, int indice);
-void thick_line_light(double x, double y, double size, int indice);
+#include <gtkmm/drawingarea.h>
+#include <gdkmm/pixbuf.h>
 
+void graphic_set_context(const Cairo::RefPtr<Cairo::Context>& cr);
 
-#endif
+void empty_world(unsigned int taille);
+
+//void set_color(int indice);
+void draw_square_border(double longueur_cote, double x, double y);
+void fill_square(double longueur_cote, double x, double y);
+void draw_circle_neutr_border(double rayon, double x, double y);
+void draw_circle_rep_border(double rayon, double x, double y);
+void draw_circle_spatial_border(double rayon, double x, double y);
+#endif // GTKMM_EXAMPLE_MYAREA_H

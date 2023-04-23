@@ -1,118 +1,80 @@
-//GRAPHIC.CC, BENARAFA MANON: %0 / GLASSEY ADELINE: 100%, V2
+#include "graphic.h"
+#include "constantes.h"
+#include <cairomm/context.h>
+#include <giomm/resource.h>
+#include <gdkmm/general.h> // set_source_pixbuf()
+#include <glibmm/fileutils.h>
 #include <iostream>
-#include <cmath>
-#include "graphic_gui.h"
-
-using namespace std;
-
-namespace {
-	vector<vector<double>> Couleur={{1.,0.,0.}, {0.,1.,0.}, {0.,0.,1.}, {1.,1.,0.},
-									{1.,0.,1.}, {0.,1.,1.}};
-}
 
 static const Cairo::RefPtr<Cairo::Context>* ptcr(nullptr);
-constexpr unsigned taille_dessin(500);
-constexpr short unsigned g_max(128);
-constexpr double delta(taille_dessin/(double)g_max);
 
 void graphic_set_context(const Cairo::RefPtr<Cairo::Context>& cr){
 	ptcr = &cr;
 }
 
-void graphic_empty_world(){
-	(*ptcr)->set_line_width(delta);
-	(*ptcr)->set_source_rgb(1, 1, 1);
-	(*ptcr)->move_to((delta/(double)2),(delta/(double)2));
-	(*ptcr)->line_to((delta/(double)2),taille_dessin-(delta/(double)2));
-	(*ptcr)->line_to(taille_dessin-(delta/(double)2),taille_dessin-(delta/(double)2));
-	(*ptcr)->line_to(taille_dessin-(delta/(double)2),(delta/(double)2));
-	(*ptcr)->line_to(0,0);	
-	(*ptcr)->stroke();
-	
-	(*ptcr)->set_line_width(0.3);
-	(*ptcr)->set_source_rgb(0.5,0.5,0.5);
-	for(double i(0); i<=taille_dessin; i+=delta){
-		(*ptcr)->move_to(i,0);
-		(*ptcr)->line_to(i,taille_dessin);
-		(*ptcr)->stroke();
-	}
-	for(double i(0); i<=taille_dessin; i+=delta){
-		(*ptcr)->move_to(0,i);
-		(*ptcr)->line_to(taille_dessin,i);
-		(*ptcr)->stroke();
-	}
-}
+void empty_world(unsigned int taille) {
+    // Set line width and color
+    (*ptcr)->set_line_width(1.0);
+    (*ptcr)->set_source_rgb(0.01, 0.01, 0.01); //couleur bordure du monde
 
+    // Draw the border rectangle
+    (*ptcr)->rectangle(0, 0, taille, taille);
+    (*ptcr)->stroke();
+}
+/*
 void set_color(int indice){
-	(*ptcr)->set_source_rgb(Couleur[indice%6][0],Couleur[indice%6][1],
-							Couleur[indice%6][2]);
+	(*ptcr)->set_source_rgb(Couleur[indice%6][0],Couleur[indice%6][1], Couleur[indice%6][2]);
+}
+*/
+void draw_square_border(double longueur_cote, double x, double y) {
+    // Set line width and color
+    (*ptcr)->set_line_width(2.0);
+    (*ptcr)->set_source_rgb(1.0, 0.0, 0.0); //couleur bordure du monde
+
+    // Draw the border rectangle
+    (*ptcr)->rectangle(x, y, longueur_cote, longueur_cote);
+    (*ptcr)->stroke();
 }
 
-void  set_color_light(int indice){
-	if (indice == 0){
-		(*ptcr)->set_source_rgb(1, 0.5,0.5);
-	}else{
-		if (indice%6==0){
-			(*ptcr)->set_source_rgb(1, 0.5,0.5);
-		}
-		if ((indice+5)%6==0){
-			(*ptcr)->set_source_rgb(0.75, 1, 0.75);
-		}
-		if ((indice+4)%6==0){
-			(*ptcr)->set_source_rgb(0.5, 0.5, 1);
-		}
-		if ((indice+3)%6==0){
-			(*ptcr)->set_source_rgb(1, 1, 0.85);
-		}
-		if ((indice+2)%6==0){
-			(*ptcr)->set_source_rgb(1, 0.75, 1);
-		}
-		if ((indice+1)%6==0){
-			(*ptcr)->set_source_rgb(0.75, 1, 1);
-		}
-	}
+void fill_square(double longueur_cote, double x, double y){
+   // Set the source color for the fill
+	(*ptcr)->set_source_rgb(0.5, 0.5, 0.5); // Gray color for fill
+    // Draw the filled rectangle
+    (*ptcr)->rectangle(x, y, longueur_cote, longueur_cote);
+    (*ptcr)->fill();
 }
 
-void fill_unitsquare (double x, double y, int indice){
-	(*ptcr)->set_line_width(delta);
-	set_color(indice);
-	(*ptcr)->move_to(x*delta,(y*delta)+(delta/2));
-	(*ptcr)->line_to((x*delta)+delta,(y*delta)+(delta/2));
-	(*ptcr)->stroke();	
-}
-
-void fill_diamond(double x, double y){
-	(*ptcr)->set_line_width(delta/(sqrt(2)));
-	(*ptcr)->set_source_rgb(1, 1, 1);
-	(*ptcr)->move_to((x*delta)+(delta/4),(y*delta)+(delta/4));
-	(*ptcr)->line_to((x*delta)+(delta*0.75),(y*delta)+(delta*0.75));
+void draw_circle_neutr_border(double rayon, double x, double y){
+	(*ptcr)->save();
+	(*ptcr)->arc(x, y, rayon, 0.0, 2.0 * M_PI); // full circle
+	(*ptcr)->set_source_rgb(0.0, 0.0, 0.0);    
+	(*ptcr)->set_line_width(0.5);
 	(*ptcr)->stroke();
-}	
-	
-void thin_square(double x, double y,double size,int indice){
-	(*ptcr)->set_line_width(2.0);
-	set_color(indice);
-	(*ptcr)->move_to((x*delta)+(delta/2.),(y*delta)+(delta/2.));
-	(*ptcr)->line_to((x*delta)+(size*delta)-(delta/2.),(y*delta)+(delta/2.));
-	(*ptcr)->line_to((x*delta)+(size*delta)-(delta/2.),
-					(y*delta)+(size*delta)-(delta/2.));
-	(*ptcr)->line_to((x*delta)+(delta/2.),(y*delta)+(size*delta)-(delta/2.));
-	(*ptcr)->line_to((x*delta)+(delta/2.),(y*delta)+((delta-2.)/2.));
-	(*ptcr)->stroke();	
-}	
-	
-void thick_line(double x, double y, double size, int indice){
-	(*ptcr)->set_line_width(delta);
-	set_color(indice);
-	(*ptcr)->move_to((x*delta),(y*delta)+(delta/2));
-	(*ptcr)->line_to((x*delta)+(size*delta),(y*delta)+(delta/2));
-	(*ptcr)->stroke();		
-}	
-
-void thick_line_light(double x, double y, double size, int indice){
-	(*ptcr)->set_line_width(delta);
-	set_color_light(indice);
-	(*ptcr)->move_to((x*delta),(y*delta)+(delta/2));
-	(*ptcr)->line_to((x*delta)+(size*delta),(y*delta)+(delta/2));
-	(*ptcr)->stroke();		
 }
+
+void draw_circle_rep_border(double rayon, double x, double y){
+    (*ptcr)->save();
+    (*ptcr)->arc(x, y, rayon, 0.0, 2.0 * M_PI); // full circle
+
+    // Fill the circle with green color
+    (*ptcr)->set_source_rgb(0.0, 1.0, 0.0);
+    (*ptcr)->fill_preserve();
+
+    // Set the border color to black
+    (*ptcr)->set_source_rgb(0.0, 0.0, 0.0);    
+    (*ptcr)->set_line_width(0.5);
+
+    // Stroke the border
+    (*ptcr)->stroke();
+
+    (*ptcr)->restore();
+}
+
+void draw_circle_spatial_border(double rayon, double x, double y){
+	(*ptcr)->save();
+	(*ptcr)->arc(x, y, rayon, 0.0, 2.0 * M_PI); // full circle
+	(*ptcr)->set_source_rgb(0.0, 0.0, 1.0);    
+	(*ptcr)->set_line_width(0.5);
+	(*ptcr)->stroke();
+}
+

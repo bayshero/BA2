@@ -1,69 +1,79 @@
-#ifndef GUI_H_INCLUDED
-#define GUI_H_INCLUDED
+#ifndef GTKMM_GUI_H
+#define GTKMM_GUI_H
 
-#include <gtkmm.h>
+#include <gtkmm/window.h>
+#include <gtkmm/box.h>
+#include <gtkmm/button.h>
+#include <gtkmm/label.h>
+#include <gtkmm/separator.h>
+#include <gtkmm/filechooserdialog.h>
+#include <gtkmm/frame.h>
+#include "gui.h"
+#include "simulation.h"
+#include "graphic.h"
+#include <string>
+#include <gtkmm/drawingarea.h>
 
-struct Frame{
-	double xMin; 
+struct Frame // Model Framing and window parameters
+{
+	double xMin; // frame parameters
 	double xMax;
 	double yMin;
 	double yMax;
-	double asp;  
-	int height;  
-	int width;   
+	double asp;  // frame aspect ratio
+	int height;  // window height
+	int width;   // window width
 };
 
-class Area : public Gtk::DrawingArea{
+
+
+class MyArea : public Gtk::DrawingArea
+{
 public:
-	Area();
-	virtual ~Area();
-	void setFrame(Frame x); 
-	void adjustFrame();
-	void refresh();
+	MyArea();
+	virtual ~MyArea();
+	void setFrame(Frame x);
+	void adjustFrame(int width, int height);
+
 protected:
-	bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr) override;
+	void on_draw(const Cairo::RefPtr<Cairo::Context>& cr, const int width, const int height);
 private:
 	Frame frame;
 };
 
-class Fenetre : public Gtk::Window{
+
+class Gui : public Gtk::Window
+{
 public:
-	Fenetre();
-	virtual ~Fenetre();
-	void reset();
+	Gui(const std::string& filename = "");
+	virtual ~Gui();
 protected:
-	bool on_key_press_event(GdkEventKey * key_event);
-	void on_button_clicked_exit();
-	void on_button_clicked_open();
-	void on_button_clicked_save();
-	void on_button_clicked_start();
-	void on_button_clicked_step();
-	void on_button_clicked_previous();
-	void on_button_clicked_next();
-	Area m_Area;
-	Gtk::Box m_Box, m_Box_Left, m_Box_Right;
-	Gtk::Box m_Box_Top, m_Box_Middle, m_Box_Bottom;
-	Gtk::Button Button_exit;
-	Gtk::Button Button_open;
-	Gtk::Button Button_save;
-	Gtk::Button Button_start;
-	Gtk::Button Button_step;
-	Gtk::Button Button_previous;
-	Gtk::Button Button_next;
-	Gtk::Frame m_Frame_Top;
-	Gtk::Frame m_Frame_Middle;
-	Gtk::Frame m_Frame_Bottom;
-	Gtk::Label m_Label_nbn;
-	Gtk::Label m_Label_infoF;
-	unsigned int i;
-	bool f_selected;
-	bool timer_added;
-	bool disconnect;
-	const int timeout_value;
-	bool on_timeout();
-private:
-	void draw();	
+	Gtk::Box big_box, general_box, buttons_box, info_box, area_box;
+	Gtk::Label general, info, nbUpdate, nbP, nbRs, nbRr, nbNs, nbNp, nbNd, nbNr;
+	Gtk::Button button_exit, button_open, button_save,  button_start, button_step;
+	Gtk::Separator separator1;
+	
+	void on_button_exit_clicked();
+	void on_button_open_clicked();
+	//void on_button_save_clicked();
+	void on_button_start_clicked();
+	void on_button_step_clicked();
+	
+	void on_file_dialog_response_open(int response_id, Gtk::FileChooserDialog* dialog);
+	//void on_file_dialog_response_save(int response_id, Gtk::FileChooserDialog* dialog);
+	void update_infos();
+	
+	Simulation simu;
+	std::string filename;
+	
+	MyArea m_area;
 };
 
-#endif 
+std::string informations();
+
+//void draw_axes(const Cairo::RefPtr<Cairo::Context>& cr, Frame frame);
+
+#endif
+
+
 
