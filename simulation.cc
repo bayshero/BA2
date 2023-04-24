@@ -25,6 +25,15 @@ vector<R_reparateur> Simulation::robots_rep;
 vector<R_neutraliseur> Simulation::robots_neutr;
 R_spatial Simulation::rs;
 
+Simulation::Simulation(){
+	
+	Circle c1;
+	R_spatial rs_(c1, 0, 0, 0, 0, 0, 0, 0);
+	rs = rs_;
+	
+}
+	
+
 //lit le fichier text reçu 
 void Simulation::lecture(const char* file_name){	
 	string ligne;
@@ -46,7 +55,7 @@ void Simulation::lire_ligne(string ligne){
 	Circle c1;
 	Square s1;
 	double x, y, d_particule, orient;  //a = orientation, c_n =type de coordination
-	int nbUpdate, nbNr, nbNs,nbNd, nbNp(0), nbRr, nbRs, nbP, c_n, k_update_panne;
+	int nbUpdate, nbNr, nbNs, nbNd, nbNp(0), nbRr, nbRs, nbP, c_n, k_update_panne;
 	string panne_str;
 	static int section(NBP_), i(0);  //première ligne à lire (cond. initiale)
 	switch(section){
@@ -107,7 +116,7 @@ void Simulation::lire_ligne(string ligne){
 				c1.centre.x=x;
 				c1.centre.y=y;
 				robots_neutr.push_back(R_neutraliseur(c1, orient, k_update_panne, 
-														panne_));
+														panne_, c_n));
 				++i;
 				if (i==nbNs) section= FIN; 
 				break;
@@ -118,70 +127,86 @@ void Simulation::lire_ligne(string ligne){
 }
 
 //parcourt le vector de particules
-void Simulation::parcourir_p() const {
+void Simulation::parcourir_p() {
 	for (unsigned int i(0); i<particules.size(); i++){
 		for (unsigned int j(i+1); j<particules.size(); j++){
-			particules[i].superposition_p(particules[j]);	
+			if(!particules[i].superposition_p(particules[j])){
+				bool_error = false;
+			}	
 		}
 	}
 }
 
 //parcourt le vector de robots neutraliseurs
-void Simulation::parcourir_r_neutre() const {
+void Simulation::parcourir_r_neutre() {
 	for (unsigned int i(0); i<robots_neutr.size(); ++i){
 		for (unsigned int j(i+1); j<robots_neutr.size(); ++j){
-			robots_neutr[i].superposition_r_neutre(robots_neutr[j]);
+			if(!robots_neutr[i].superposition_r_neutre(robots_neutr[j])){
+				bool_error = false;
+			}
 		}
 	}
 }
 
 //parcourt le vector de robots réparateurs
-void Simulation::parcourir_r_rep() const {
+void Simulation::parcourir_r_rep() {
 	for (unsigned int i(0); i<robots_rep.size(); ++i){
 		for (unsigned int j(i+1); j<robots_rep.size(); ++j){
-			robots_rep[i].superposition_r_reparateur(robots_rep[j]);
+			if(!robots_rep[i].superposition_r_reparateur(robots_rep[j])){
+				bool_error = false;
+			}
 		}
 	}
 }
 
 //parcourt les vectors de robots rép/neutr.
-void Simulation::parcourir_r_neutre_rep() const{
+void Simulation::parcourir_r_neutre_rep() {
 	for (unsigned int i(0); i<robots_rep.size(); ++i){
 		for (unsigned int j(0); j<robots_neutr.size(); ++j){
-			robots_rep[i].superposition_r_neutre_rep(robots_neutr[j]);
+			if(!robots_rep[i].superposition_r_neutre_rep(robots_neutr[j])){
+				bool_error = false;
+			}
 		}
 	}
 }
 
 //parcourt les vectors de particules/robots rép
-void Simulation::parcourir_p_r_rep() const{
+void Simulation::parcourir_p_r_rep() {
 	for (unsigned int i(1); i<robots_rep.size(); ++i){
 		for (unsigned int j(0); j<particules.size(); ++j){
-			robots_rep[i].superposition_p_r_reparateur(particules[j]);
+			if(!robots_rep[i].superposition_p_r_reparateur(particules[j])){
+				bool_error = false;
+			}
 		}
 	}
 }
 
 //parcourt les vectors de particules/robots neutr.
-void Simulation::parcourir_p_r_neutre() const{
+void Simulation::parcourir_p_r_neutre() {
 	for (unsigned int i(1); i<robots_neutr.size(); ++i){
 		for (unsigned int j(0); j<particules.size(); ++j){
-			robots_neutr[i].superposition_p_r_neutraliseur(particules[j]);
+			if(!robots_neutr[i].superposition_p_r_neutraliseur(particules[j])){
+				bool_error = false;
+			}
 		}
 	}
 }
 
 //parcourt le vector de robot neutr. (pour comparer le nbUpdate au kUpdate)
-void Simulation::taille_attribut_check() const{ 
+void Simulation::taille_attribut_check() { 
 	for(unsigned int i(0);i<robots_neutr.size();++i){
-		robots_neutr[i].error_attribut(rs);
+		if(!robots_neutr[i].error_attribut(rs)){
+			bool_error = false;
+		}
 	}
 }
 
 //parcourt le vector de particule (pour tester la superposition entre Rs et particule)
-void Simulation::parcourir_p_rs() const{
+void Simulation::parcourir_p_rs() {
 	for (unsigned int i(0); i<particules.size(); i++){
-		rs.superposition_p_rs(particules[i]);
+		if (!rs.superposition_p_rs(particules[i])){
+			bool_error = false;
+		}
 	}
 }
 
@@ -201,7 +226,16 @@ void Simulation::fin_succes(){
 
 //fait appel à toutes les fonctions permettant de tester les erreurs
 void Simulation::error_check(){
+	bool_error = true;
 	
+	bool_error = rs.GetError_domain();
+	
+	for (auto particule : particules){
+		if (bool_error){
+			particule.particule_error();
+			bool_error = particule.getError_initialisation();
+		}
+	}
 	parcourir_p();
 	parcourir_r_neutre();
 	parcourir_r_rep();
@@ -209,23 +243,87 @@ void Simulation::error_check(){
 	taille_attribut_check();
 	parcourir_p_rs();
 	parcourir_p_r_neutre();
-	parcourir_p_r_rep();	
-	fin_succes(); 	
+	parcourir_p_r_rep();
+	
+	if (bool_error){ 
+		fin_succes();
+	}
 }
 
-void Simulation::save(const char* save_filename) {
-    std::ofstream output_file(save_filename);
+void Simulation::save(string save_filename) {
+    std::ofstream file(save_filename);
 
-    if (!output_file.is_open()) {
-        std::cerr << "Error: Unable to open file for writing: " << save_filename << std::endl;
+    if (!file.is_open()) {
         return;
     }
 
-    // Write updated values to the file
-    // Replace this with your actual data and format
-    output_file << "Updated values go here" << std::endl;
+    file << particules.size() << endl;
 
-    output_file.close();
+    for (auto part : particules){
+		file << part.Particule::get_as_string() << endl;
+	}
+	file << rs.get_as_string() << endl;
+	
+	for(auto robot_rep : robots_rep){
+		file << robot_rep.R_reparateur::get_as_string() << endl;
+	}
+	
+	for (auto robot_neutr : robots_neutr){
+		file << robot_neutr.R_neutraliseur::get_as_string() << endl;
+	}
+
+    file.close();
+}
+
+void Simulation::setRsNbUpdate(int newNbUpdate) {
+    rs.setNbUpdate(newNbUpdate);
+}
+
+bool Simulation::getError_simu() const{
+	return bool_error;
+}
+
+void Simulation::desintegration_particules() {
+    double p(desintegration_rate);
+    bernoulli_distribution b(p / particules.size());
+    vector<Particule> new_particules;
+    
+    for (auto particule : particules) {
+		double new_longueur = particule.GetLongueur() / 2 - 2 * epsil_zero;
+		if (new_longueur > d_particule_min + epsil_zero) {
+			//desintegration d'une particule si sa future taile > d_particule + e0
+			if (b(e)) {
+				// Désintégration de la particule
+				// Ajoute 4 nouvelles particules
+				double d = particule.GetLongueur() / 4;
+				double pos_x = particule.GetSquare().centre.x;
+				double pos_y = particule.GetSquare().centre.y;
+				S2d centre1 = {pos_x - d, pos_y + d};
+				S2d centre2 = {pos_x - d, pos_y - d};
+				S2d centre3 = {pos_x + d, pos_y + d};
+				S2d centre4 = {pos_x + d, pos_y - d};
+				Square s1 = {centre1, new_longueur};
+				Square s2 = {centre2, new_longueur};
+				Square s3 = {centre3, new_longueur};
+				Square s4 = {centre4, new_longueur};
+				new_particules.push_back(Particule(s1));
+				new_particules.push_back(Particule(s2));
+				new_particules.push_back(Particule(s3));
+				new_particules.push_back(Particule(s4));
+			} else {
+				// Ajoute la particule au nouveau vecteur (si pas de désintegration)
+				new_particules.push_back(particule);
+			}
+		} else {
+			new_particules.push_back(particule);
+		}
+	}
+    // Remplace le vecteur original par le nouveau vecteur
+    particules = new_particules;
+}
+
+void Simulation::lance_simulation() {
+    desintegration_particules();
 }
 
 

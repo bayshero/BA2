@@ -12,13 +12,19 @@
 class Particule {
 private:
 	Square s;
+	bool error_initialisation;
 public:
-	Particule(Square s);  				//constructeur
+Particule(Square s);  				//constructeur
+	
 	double GetLongueur() const;
+	Square GetSquare() const;
+	bool getError_initialisation() const;
+	
 	bool taille_min();
 	bool in_domaine();
-	Square GetSquare() const;
+	void particule_error();
 	bool superposition_p(const Particule& p1) const;
+	std::string get_as_string();
 };
 
 void draw_particule(const Particule& p);

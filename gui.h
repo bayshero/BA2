@@ -1,6 +1,7 @@
 #ifndef GTKMM_GUI_H
 #define GTKMM_GUI_H
 
+#include <gtkmm.h>
 #include <gtkmm/window.h>
 #include <gtkmm/box.h>
 #include <gtkmm/button.h>
@@ -13,6 +14,7 @@
 #include "graphic.h"
 #include <string>
 #include <gtkmm/drawingarea.h>
+#include "constantes.h"
 
 struct Frame // Model Framing and window parameters
 {
@@ -55,21 +57,32 @@ protected:
 	
 	void on_button_exit_clicked();
 	void on_button_open_clicked();
-	//void on_button_save_clicked();
+	void on_button_save_clicked();
 	void on_button_start_clicked();
 	void on_button_step_clicked();
 	
 	void on_file_dialog_response_open(int response_id, Gtk::FileChooserDialog* dialog);
-	//void on_file_dialog_response_save(int response_id, Gtk::FileChooserDialog* dialog);
+	void on_file_dialog_response_save(int response_id, Gtk::FileChooserDialog* dialog);
+	
+	void maj_label(int nbUpdate_);
 	void update_infos();
 	
 	Simulation simu;
 	std::string filename;
 	
+	bool on_timeout();
+	bool timer_added;
+	bool disconnect;
+	const int timeout_value; 
+	unsigned int counter;
+	bool started;
+
+	void monde_faux();
+	
 	MyArea m_area;
 };
 
-std::string informations();
+
 
 //void draw_axes(const Cairo::RefPtr<Cairo::Context>& cr, Frame frame);
 

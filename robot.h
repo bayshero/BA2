@@ -22,18 +22,20 @@ public:
 
 class R_spatial: public Robot {
 private :
+	int nbUpdate; 		//compteur de l'avancement des mise à jours
 	int nbN;			//nombre de robots neutraliseurs (total)
 	int nbNr;  			//nombre de robots neutraliseurs en réserve
 	int nbNs;			//nombre de robots neutraliseurs en service
-	int nbNp;			//nombre de robots neutraliseurs en panne
 	int nbNd;			//nombre de robots neutraliseur détruits
+	int nbNp;			//nombre de robots neutraliseurs en panne
 	int nbR;			//nombre de robots réparateurs (total)
 	int nbRr;			//nombre de robots réparateurs en reserve
 	int nbRs;			//nombre de robots réparateurs en service
-	int nbUpdate; 		//compteur de l'avancement des mise à jours
+	bool error_domain;
 public :
 	R_spatial();
-	R_spatial(Circle c, int nbUpdate, int nbNr, int nbNs, int nbNd,int nbNp, int nbRr,int nbRs);
+	R_spatial(Circle c, int nbUpdate, int nbNr, int nbNs, int nbNd, int nbNp, int nbRr,int nbRs);
+	
 	int GetNbUpdate() const;
 	int GetNbRs() const;
 	int GetNbRr() const;
@@ -41,8 +43,14 @@ public :
 	int GetNbNp() const;
 	int GetNbNd() const;
 	int GetNbNr() const;
+	bool GetError_domain() const;
+	
 	bool superposition_p_rs(const Particule& p) const;
 	bool rs_in_domain() const;
+	
+	std::string get_as_string();
+	
+	void setNbUpdate(int newNbUpdate);
 };
 
 
@@ -52,12 +60,14 @@ private:
 	int k_update;
 	bool panne;
 	S2d but; 				//cible du robot 
+	int c_n;
 public:
-	R_neutraliseur(Circle c, double a, int k_update_, bool panne_);
+	R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_);
 	int GetKupdate() const;
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;
 	bool error_attribut(const R_spatial& rs) const;
+	std::string get_as_string();
 
 };
 
@@ -68,6 +78,7 @@ public :
 	R_reparateur(Circle c);
 	bool superposition_r_reparateur(const R_reparateur& r) const;
 	bool superposition_p_r_reparateur(const Particule& r) const;
+	std::string get_as_string();
 };
 
 void draw_robot_rep(const R_reparateur& r);
