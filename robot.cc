@@ -20,12 +20,16 @@ Robot::Robot(Circle c)
 Robot::Robot() {}							
 
 R_spatial::R_spatial(Circle c, int nbUpdate_, int nbNr_, int nbNs_, int nbNd_, 
-					int NbNp_, int nbRr_, int nbRs_)
-	: Robot(c), nbNr(nbNr_),nbNs(nbNs_), nbNd(nbNd_),nbRr(nbRr_),nbRs(nbRs_), 
-		nbUpdate(nbUpdate_){
+					int nbNp_, int nbRr_, int nbRs_)
+	: Robot(c), nbUpdate(nbUpdate_), nbNr(nbNr_), nbNs(nbNs_), nbNd(nbNd_), 
+				nbNp(nbNp_), nbRr(nbRr_), nbRs(nbRs_)
+{
 	nbN= nbNr_+nbNs_+nbNd_; nbR=nbRr_+nbRs_;
 	if (!rs_in_domain()){
 		cout<<message::spatial_robot_ouside(cercle.centre.x, cercle.centre.y);
+		error_domain = false;
+	} else {
+		error_domain = true;
 	}
 }
 
@@ -35,8 +39,8 @@ R_spatial::R_spatial()
 R_reparateur::R_reparateur(Circle c)
 	: Robot(c) {}
 
-R_neutraliseur::R_neutraliseur(Circle c, double a, int k_update_, bool panne_)
-	: Robot(c), orientation(a), k_update(k_update_) , panne(panne_) {}
+R_neutraliseur::R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_)
+	: Robot(c), orientation(a), k_update(k_update_) , panne(panne_), c_n(c_n_) {}
 
 
 Circle Robot::GetCircle() const {
@@ -73,6 +77,10 @@ int R_spatial::GetNbNd() const{
 
 int R_spatial::GetNbNr() const{
 	return nbNr;
+}
+
+bool R_spatial::GetError_domain() const{
+	return error_domain;
 }
 
 //vérifie que deux robots neutraliseur ne se superposent pas
@@ -168,6 +176,43 @@ bool R_spatial::rs_in_domain() const{
 	}else{
 		return false;
 	}
+}
+
+string R_spatial::get_as_string() {
+	string line = to_string(cercle.centre.x) + " " + to_string(cercle.centre.y) 
+											 + " " + to_string(nbUpdate)
+											 + " " + to_string(nbNr)
+											 + " " + to_string(nbNs)
+											 + " " + to_string(nbNd)
+											 + " " + to_string(nbRr)
+											 + " " + to_string(nbRs);
+	return line;
+}
+
+string R_neutraliseur::get_as_string(){
+	string panne_str;
+	if (panne){
+		panne_str = "true";
+	} else {
+		panne_str = "false";
+	}
+	string line = to_string(cercle.centre.x) + " " + to_string(cercle.centre.y)
+											 + " " + to_string(orientation)
+											 + " " + to_string(c_n)
+											 + " " + panne_str
+											 + " " + to_string(k_update);
+	
+	return line;
+}
+
+string R_reparateur::get_as_string(){
+	string line = to_string(cercle.centre.x) + " " + to_string(cercle.centre.y);
+	
+	return line;
+}
+
+void R_spatial::setNbUpdate(int newNbUpdate) {
+    nbUpdate = newNbUpdate;
 }
 
 

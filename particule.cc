@@ -13,14 +13,7 @@
 using namespace std;
 
 Particule::Particule(Square s)
-	: s(s){
-	if (!taille_min()){
-		cout<<message::particle_too_small(s.centre.x,s.centre.y,s.longueur_cote);
-	}
-	if (!in_domaine()){
-		cout<<message::particle_outside(s.centre.x,s.centre.y,s.longueur_cote);
-	}
-}
+	: s(s){}
 	
 double Particule::GetLongueur() const{
 	return s.longueur_cote;
@@ -51,8 +44,31 @@ bool Particule::in_domaine(){
 	}
 }
 	
+void Particule::particule_error(){
+	if (!taille_min()){
+		cout<<message::particle_too_small(s.centre.x,s.centre.y,s.longueur_cote);
+		error_initialisation = false;
+	} else {
+		error_initialisation = true;
+	}
+	if (!in_domaine()){
+		cout<<message::particle_outside(s.centre.x,s.centre.y,s.longueur_cote);
+		if (error_initialisation){
+			error_initialisation = false;
+		}
+	} else {
+		if (error_initialisation){
+			error_initialisation = true;
+		}
+	}
+}
+	
 Square Particule::GetSquare() const {
 	return s;
+}
+
+bool Particule::getError_initialisation() const {
+	return error_initialisation;
 }
 
 //vérifie que deux particules ne se superposent pas
@@ -64,3 +80,9 @@ bool Particule::superposition_p(const Particule& p1) const{
 	}
 	return true;
 }
+string Particule::get_as_string(){
+	string line = to_string(s.centre.x) + " " + to_string(s.centre.y) 
+										+ " " + to_string(s.longueur_cote);
+	return line;
+}
+
