@@ -327,18 +327,19 @@ void Simulation::lance_simulation() {
 }
 
 
-void draw_world(){
-    for (unsigned int i(0); i<Simulation::particules.size(); ++i){
+void draw_world() {
+    for (unsigned int i(0); i < Simulation::particules.size(); ++i) {
         draw_particule(Simulation::particules[i]);
     }
-    for (unsigned int j(0); j<Simulation::robots_neutr.size(); ++j){
-		draw_robot_neutr(Simulation::robots_neutr[j]);
-	}
-	for (unsigned int k(0); k<Simulation::robots_rep.size(); ++k){
-		draw_robot_rep(Simulation::robots_rep[k]);
-	}
-	draw_robot_spatial(Simulation::rs);
+    for (unsigned int j(0); j < Simulation::robots_neutr.size(); ++j) {
+        draw_robot_neutr(Simulation::robots_neutr[j]);
+    }
+    for (unsigned int k(0); k < Simulation::robots_rep.size(); ++k) {
+        draw_robot_rep(Simulation::robots_rep[k]);
+    }
+    draw_robot_spatial(Simulation::rs);
 }
+
 
 
 

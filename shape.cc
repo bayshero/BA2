@@ -74,20 +74,22 @@ bool collision_cs(Circle c2, Square s1, bool use_epsil){
 	return collision;
 }
 
-void draw_circle_rep(Circle c){
-	draw_circle_rep_border(c.rayon, c.centre.x, c.centre.y);
+void draw_circle_rep(Circle c) {
+    draw_circle_rep_border(c.rayon, c.centre.x, c.centre.y);
 }
 
-void draw_circle_neutr(Circle c){
-	draw_circle_neutr_border(c.rayon, c.centre.x, c.centre.y);
+void draw_circle_neutr(Circle c) {
+    draw_circle_neutr_border(c.rayon, c.centre.x, c.centre.y);
+}
+
+void draw_circle_spatial(Circle c) {
+    draw_circle_spatial_border(c.rayon, c.centre.x, c.centre.y);
 }
 
 
-void draw_square(Square s){
-	draw_square_border(s.longueur_cote, s.centre.x, s.centre.y);
-	fill_square(s.longueur_cote, s.centre.x, s.centre.y);
+
+void draw_square(Square s) {
+    draw_square_border(s.longueur_cote, s.centre.x, s.centre.y);
+    fill_square(s.longueur_cote, s.centre.x, s.centre.y);
 }
 
-void draw_circle_spatial(Circle c){
-	draw_circle_spatial_border(c.rayon, c.centre.x, c.centre.y);
-}

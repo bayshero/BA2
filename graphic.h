@@ -6,7 +6,7 @@
 
 void graphic_set_context(const Cairo::RefPtr<Cairo::Context>& cr);
 
-void empty_world(unsigned int taille);
+void empty_world(unsigned int taille, double xmin, double ymin, double xmax, double ymax);
 
 //void set_color(int indice);
 void draw_square_border(double longueur_cote, double x, double y);

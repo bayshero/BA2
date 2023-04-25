@@ -39,7 +39,7 @@ Gui::Gui(const std::string& filename):
 	
 	//big box
 	big_box.append(buttons_box);
-	m_area.set_size_request(taille_dessin);
+	m_area.set_size_request(taille_dessin); 
 	m_area.set_expand(true); //super cool a fixer distortion
 	area_box.append(m_area);
 	big_box.append(area_box);
@@ -312,7 +312,7 @@ void Gui::monde_faux(){
 
 
 // default Model Framing and window parameters
-static Frame default_frame = {0, 500, 0, 500, 1.0, 500, 500}; 
+static Frame default_frame = {-250, 250, -250, 250, 1.0, 500, 500}; 
 
 
 MyArea::MyArea(){
@@ -367,19 +367,25 @@ void MyArea::adjustFrame(int width, int height){
     }
 }
 
-static void orthographic_projection(const Cairo::RefPtr<Cairo::Context>& cr, 
-								    Frame frame){
-	// déplace l'origine au centre de la fenêtre
-	cr->translate(frame.width/2, frame.height/2);
-  
-	// normalise la largeur et hauteur aux valeurs fournies par le cadrage
-	// ET inverse la direction de l'axe Y
-	cr->scale(frame.width/(frame.xMax - frame.xMin), 
-             -frame.height/(frame.yMax - frame.yMin));
-  
-	// décalage au centre du cadrage
-	cr->translate(-(frame.xMin + frame.xMax)/2, -(frame.yMin + frame.yMax)/2);
+
+
+
+
+static void orthographic_projection(const Cairo::RefPtr<Cairo::Context>& cr,
+   							 	Frame frame){
+    // déplace l'origine au centre de la fenêtre
+    cr->translate(frame.width/2, frame.height/2);
+ 
+    // normalise la largeur et hauteur aux valeurs fournies par le cadrage
+    // ET inverse la direction de l'axe Y
+    cr->scale(frame.width/(frame.xMax - frame.xMin),
+         	-frame.height/(frame.yMax - frame.yMin));
+ 
+    // décalage au centre du cadrage
+    cr->translate(-(frame.xMin + frame.xMax)/2, -(frame.yMin + frame.yMax)/2);
 }
+
+
 /*
 #include <pango/pangocairo.h>//temporary
 
@@ -440,6 +446,9 @@ void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,con
 //	xc = width / 2;
 	//yc = height / 2;
 	
-	empty_world(taille_dessin);
+	empty_world(taille_dessin, frame.xMin, frame.yMin, frame.xMax, frame.yMax);
 	draw_world();
 }
+
+
+

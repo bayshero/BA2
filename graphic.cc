@@ -12,15 +12,23 @@ void graphic_set_context(const Cairo::RefPtr<Cairo::Context>& cr){
 	ptcr = &cr;
 }
 
-void empty_world(unsigned int taille) {
-    // Set line width and color
+
+
+void empty_world(unsigned int taille, double xmin, double ymin, double xmax, double ymax) {
+   // Set line width and color
     (*ptcr)->set_line_width(1.0);
     (*ptcr)->set_source_rgb(0.01, 0.01, 0.01); //couleur bordure du monde
 
+    // Calculate border size and position
+    double border_size = min(xmax - xmin, ymax - ymin);
+    double border_x = (xmax + xmin - border_size) / 2.0;
+    double border_y = (ymax + ymin - border_size) / 2.0;
+
     // Draw the border rectangle
-    (*ptcr)->rectangle(0, 0, taille, taille);
+    (*ptcr)->rectangle(border_x, border_y, border_size, border_size);
     (*ptcr)->stroke();
 }
+
 /*
 void set_color(int indice){
 	(*ptcr)->set_source_rgb(Couleur[indice%6][0],Couleur[indice%6][1], Couleur[indice%6][2]);
@@ -28,21 +36,31 @@ void set_color(int indice){
 */
 void draw_square_border(double longueur_cote, double x, double y) {
     // Set line width and color
-    (*ptcr)->set_line_width(2.0);
+    (*ptcr)->set_line_width(1.5);
     (*ptcr)->set_source_rgb(1.0, 0.0, 0.0); //couleur bordure du monde
 
+    // Calculate the top-left corner coordinates based on the square's center
+    double x_top_left = x - longueur_cote / 2.0;
+    double y_top_left = y - longueur_cote / 2.0;
+
     // Draw the border rectangle
-    (*ptcr)->rectangle(x, y, longueur_cote, longueur_cote);
+    (*ptcr)->rectangle(x_top_left, y_top_left, longueur_cote, longueur_cote);
     (*ptcr)->stroke();
 }
 
 void fill_square(double longueur_cote, double x, double y){
-   // Set the source color for the fill
-	(*ptcr)->set_source_rgb(0.5, 0.5, 0.5); // Gray color for fill
+    // Set the source color for the fill
+    (*ptcr)->set_source_rgb(0.5, 0.5, 0.5); // Gray color for fill
+
+    // Calculate the top-left corner coordinates based on the square's center
+    double x_top_left = x - longueur_cote / 2.0;
+    double y_top_left = y - longueur_cote / 2.0;
+
     // Draw the filled rectangle
-    (*ptcr)->rectangle(x, y, longueur_cote, longueur_cote);
+    (*ptcr)->rectangle(x_top_left, y_top_left, longueur_cote, longueur_cote);
     (*ptcr)->fill();
 }
+
 
 void draw_circle_neutr_border(double rayon, double x, double y){
 	(*ptcr)->save();
