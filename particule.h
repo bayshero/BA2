@@ -14,7 +14,7 @@ private:
 	Square s;
 	bool error_initialisation;
 public:
-	Particule(Square s);  				//constructeur
+Particule(Square s);  				//constructeur
 	
 	double GetLongueur() const;
 	Square GetSquare() const;
@@ -26,5 +26,7 @@ public:
 	bool superposition_p(const Particule& p1) const;
 	std::string get_as_string();
 };
+
+void draw_particule(const Particule& p);
 
 #endif

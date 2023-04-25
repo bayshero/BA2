@@ -21,7 +21,7 @@ class Simulation{
 public :
 	Simulation();
 
-	void lecture(const char* file_name);
+	void lecture(string file_name);
 	void lire_ligne(string ligne);
 	
 	void parcourir_p();
@@ -38,24 +38,25 @@ public :
 	vector<Particule> GetParticules() const;
 	R_spatial GetRs() const;
 	bool getError_simu() const;
+	void delete_simu();
 
 	void save(string save_filename);
 	
 	void setRsNbUpdate(int newNbUpdate);
+	
 	//simulation
 	void lance_simulation();
 	void desintegration_particules();
-	
-private :
-	vector<Particule> particules;
-	R_spatial rs;	
-	vector<R_reparateur> robots_rep;
-	vector<R_neutraliseur> robots_neutr;
-	
+	static vector<Particule> particules;
+	static vector<R_neutraliseur> robots_neutr;
+	static vector<R_reparateur> robots_rep;
+	static R_spatial rs;
+private :	
 	bool bool_error; //false si il y a une erreur détectée dans la simulation
 	default_random_engine e;
-	
 };
+
+void draw_world();
 
 #endif
 

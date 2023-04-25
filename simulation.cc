@@ -20,26 +20,27 @@
 
 using namespace std;
 
-Simulation::Simulation(){
-	
-	Circle c1;
-	R_spatial rs_(c1, 0, 0, 0, 0, 0, 0, 0);
-	rs = rs_;
-	
-}
-	
+vector<Particule> Simulation::particules;
+vector<R_reparateur> Simulation::robots_rep;
+vector<R_neutraliseur> Simulation::robots_neutr;
+R_spatial Simulation::rs;
+
+
+Simulation::Simulation(){}
+
 
 //lit le fichier text reçu 
-void Simulation::lecture(const char* file_name){	
+void Simulation::lecture(string file_name){	
 	string ligne;
 	ifstream fichier(file_name);
 	if (!fichier.fail()){			//message d'erreur
 		while(getline(std::ws(fichier),ligne)){
 			if (ligne[0]=='#') {
 				continue;
-			}
+			};
 			lire_ligne(ligne);
 		}
+		e.seed(1); //à chaque lecture, reset la sequence de nombres aleatoires
 	}else exit(EXIT_FAILURE);
 }
 
@@ -113,7 +114,10 @@ void Simulation::lire_ligne(string ligne){
 				robots_neutr.push_back(R_neutraliseur(c1, orient, k_update_panne, 
 														panne_, c_n));
 				++i;
-				if (i==nbNs) section= FIN; 
+				if (i==nbNs) {
+					i = 0;
+					section = NBP_; 
+				}
 				break;
 			}
 		case FIN:
@@ -282,6 +286,8 @@ void Simulation::desintegration_particules() {
     double p(desintegration_rate);
     bernoulli_distribution b(p / particules.size());
     vector<Particule> new_particules;
+    //e.seed(1);
+    cout<< b(e)<<endl;
     
     for (auto particule : particules) {
 		double new_longueur = particule.GetLongueur() / 2 - 2 * epsil_zero;
@@ -319,6 +325,27 @@ void Simulation::desintegration_particules() {
 
 void Simulation::lance_simulation() {
     desintegration_particules();
+}
+
+
+void draw_world(){
+    for (unsigned int i(0); i<Simulation::particules.size(); ++i){
+        draw_particule(Simulation::particules[i]);
+    }
+    for (unsigned int j(0); j<Simulation::robots_neutr.size(); ++j){
+		draw_robot_neutr(Simulation::robots_neutr[j]);
+	}
+	for (unsigned int k(0); k<Simulation::robots_rep.size(); ++k){
+		draw_robot_rep(Simulation::robots_rep[k]);
+	}
+	draw_robot_spatial(Simulation::rs);
+}
+
+void Simulation::delete_simu(){
+	particules.clear();
+	robots_neutr.clear();
+	robots_rep.clear();
+	rs.delete_rs();
 }
 
 

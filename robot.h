@@ -51,6 +51,8 @@ public :
 	std::string get_as_string();
 	
 	void setNbUpdate(int newNbUpdate);
+	
+	void delete_rs();
 };
 
 
@@ -62,7 +64,7 @@ private:
 	S2d but; 				//cible du robot 
 	int c_n;
 public:
-	R_neutraliseur(Circle c, double a, int k_update_, bool panne_,int c_n_);
+	R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_);
 	int GetKupdate() const;
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;
@@ -80,6 +82,11 @@ public :
 	bool superposition_p_r_reparateur(const Particule& r) const;
 	std::string get_as_string();
 };
+
+void draw_robot_rep(const R_reparateur& r);
+void draw_robot_neutr(const R_neutraliseur& r);
+void draw_robot_spatial(const R_spatial& r);
+
 
 #endif	
 		

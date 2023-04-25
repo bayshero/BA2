@@ -43,7 +43,7 @@ bool Particule::in_domaine(){
 		return false;
 	}
 }
-	
+
 void Particule::particule_error(){
 	if (!taille_min()){
 		cout<<message::particle_too_small(s.centre.x,s.centre.y,s.longueur_cote);
@@ -80,9 +80,14 @@ bool Particule::superposition_p(const Particule& p1) const{
 	}
 	return true;
 }
+
 string Particule::get_as_string(){
 	string line = to_string(s.centre.x) + " " + to_string(s.centre.y) 
 										+ " " + to_string(s.longueur_cote);
 	return line;
+}
+
+void draw_particule(const Particule& p){
+	draw_square(p.GetSquare());
 }
 

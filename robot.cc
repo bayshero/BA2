@@ -215,4 +215,30 @@ void R_spatial::setNbUpdate(int newNbUpdate) {
     nbUpdate = newNbUpdate;
 }
 
+void draw_robot_rep(const R_reparateur& r){
+	draw_circle_rep(r.GetCircle());
+}
 
+
+void draw_robot_neutr(const R_neutraliseur& r){
+	draw_circle_neutr(r.GetCircle());
+}
+
+void draw_robot_spatial(const R_spatial& r){
+	draw_circle_spatial(r.GetCircle());
+}
+
+void R_spatial::delete_rs(){
+	S2d pos = {0,0};
+	cercle = {0,pos};
+	nbUpdate=0;		
+	nbN=0;	
+	nbNr=0;
+	nbNs=0;
+	nbNd=0;
+	nbNp=0;
+	nbR=0;
+	nbRr=0;
+	nbRs=0;
+	error_domain=true;
+}
