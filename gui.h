@@ -63,6 +63,7 @@ protected:
 	
 	void on_file_dialog_response_open(int response_id, Gtk::FileChooserDialog* dialog);
 	void on_file_dialog_response_save(int response_id, Gtk::FileChooserDialog* dialog);
+	bool on_window_key_pressed(guint keyval, guint, Gdk::ModifierType state);
 	
 	void maj_label(int nbUpdate_);
 	void update_infos();
@@ -81,10 +82,6 @@ protected:
 	
 	MyArea m_area;
 };
-
-
-
-//void draw_axes(const Cairo::RefPtr<Cairo::Context>& cr, Frame frame);
 
 #endif
 

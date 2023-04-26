@@ -25,26 +25,22 @@ vector<R_reparateur> Simulation::robots_rep;
 vector<R_neutraliseur> Simulation::robots_neutr;
 R_spatial Simulation::rs;
 
-Simulation::Simulation(){
-	
-	Circle c1;
-	R_spatial rs_(c1, 0, 0, 0, 0, 0, 0, 0);
-	rs = rs_;
-	
-}
-	
+
+Simulation::Simulation(){}
+
 
 //lit le fichier text reçu 
-void Simulation::lecture(const char* file_name){	
+void Simulation::lecture(string file_name){
 	string ligne;
 	ifstream fichier(file_name);
 	if (!fichier.fail()){			//message d'erreur
 		while(getline(std::ws(fichier),ligne)){
 			if (ligne[0]=='#') {
 				continue;
-			}
+			};
 			lire_ligne(ligne);
 		}
+		e.seed(1); //à chaque lecture, reset la sequence de nombres aleatoires
 	}else exit(EXIT_FAILURE);
 }
 
@@ -68,9 +64,7 @@ void Simulation::lire_ligne(string ligne){
 		case PARTICULE:
 			if(!(data>>x>>y>>d_particule)) exit(EXIT_FAILURE);
 			else {
-				s1.centre.x=x;
-				s1.centre.y=y;
-				s1.longueur_cote=d_particule;
+				s1 = {{x,y},d_particule};
 				Particule c(s1);
 				particules.push_back(c);  //ajoute chaque particule à son vector
 				++i;
@@ -84,20 +78,21 @@ void Simulation::lire_ligne(string ligne){
 			if(!(data>>x>>y>>nbUpdate>>nbNr>>nbNs>>nbNd>>nbRr>>nbRs)){
 				exit(EXIT_FAILURE);
 			}else{
-				c1.rayon = r_spatial;
-				c1.centre.x=x;
-				c1.centre.y=y;
+				c1 = {r_spatial,{x,y}};
 				R_spatial rs_(c1, nbUpdate, nbNr, nbNs, nbNd, nbNp, nbRr, nbRs);
-				rs= rs_;	
-				section = R_REP;
+				rs= rs_;
+				if ((nbNr+nbNs+nbNp==0)or(nbRr+nbRs==0)){
+					section= NBP_;
+					i=0;
+				} else {
+					section = R_REP;
+				}
 				break;
 			}
 		case R_REP:
 			if (!(data>>x>>y)) exit(EXIT_FAILURE);
 			else {
-				c1.rayon= r_reparateur;
-				c1.centre.x=x;
-				c1.centre.y=y;
+				c1 = {r_reparateur,{x,y}};
 				R_reparateur rr(c1);
 				robots_rep.push_back(rr);
 				++i;
@@ -108,7 +103,7 @@ void Simulation::lire_ligne(string ligne){
 				break;
 			}
 		case R_NEUTR:
-			if (!(data>>x>>y>>orient>>c_n>>panne_str>>k_update_panne)){     
+			if (!(data>>x>>y>>orient>>c_n>>panne_str>>k_update_panne)){    
 				exit(EXIT_FAILURE);
 			}else{
 				bool panne_ =(panne_str=="true");
@@ -118,7 +113,10 @@ void Simulation::lire_ligne(string ligne){
 				robots_neutr.push_back(R_neutraliseur(c1, orient, k_update_panne, 
 														panne_, c_n));
 				++i;
-				if (i==nbNs) section= FIN; 
+				if (i==nbNs) {
+					i = 0;
+					section = NBP_; 
+				}
 				break;
 			}
 		case FIN:
@@ -287,9 +285,10 @@ void Simulation::desintegration_particules() {
     double p(desintegration_rate);
     bernoulli_distribution b(p / particules.size());
     vector<Particule> new_particules;
+    cout<< b(e)<<endl;
     
     for (auto particule : particules) {
-		double new_longueur = particule.GetLongueur() / 2 - 2 * epsil_zero;
+		double new_longueur = (particule.GetLongueur()/2) - (2*epsil_zero);
 		if (new_longueur > d_particule_min + epsil_zero) {
 			//desintegration d'une particule si sa future taile > d_particule + e0
 			if (b(e)) {
@@ -340,14 +339,9 @@ void draw_world(){
 	draw_robot_spatial(Simulation::rs);
 }
 
-
-
-
-	
-
-	
-
-
-
-
-
+void Simulation::delete_simu(){
+	particules.clear();
+	robots_neutr.clear();
+	robots_rep.clear();
+	rs.delete_rs();
+}

@@ -51,6 +51,8 @@ public :
 	std::string get_as_string();
 	
 	void setNbUpdate(int newNbUpdate);
+	
+	void delete_rs();
 };
 
 

@@ -34,10 +34,10 @@ bool collision_ss(Square c1, Square s2, bool use_epsil=true);
 bool collision_cs(Circle c2, Square s1, bool use_epsil=true);
 
 
-void draw_circle_rep(Circle c);
-void draw_circle_neutr(Circle c);
-void draw_square(Square s);
-void draw_circle_spatial(Circle c);
+void draw_circle_rep(const Circle& c);
+void draw_circle_neutr(const Circle& c);
+void draw_square(const Square& s);
+void draw_circle_spatial(const Circle& c);
 
 #endif
 

@@ -90,3 +90,4 @@ string Particule::get_as_string(){
 void draw_particule(const Particule& p){
 	draw_square(p.GetSquare());
 }
+

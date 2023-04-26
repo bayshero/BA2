@@ -21,7 +21,7 @@ class Simulation{
 public :
 	Simulation();
 
-	void lecture(const char* file_name);
+	void lecture(string file_name);
 	void lire_ligne(string ligne);
 	
 	void parcourir_p();
@@ -38,10 +38,12 @@ public :
 	vector<Particule> GetParticules() const;
 	R_spatial GetRs() const;
 	bool getError_simu() const;
+	void delete_simu();
 
 	void save(string save_filename);
 	
 	void setRsNbUpdate(int newNbUpdate);
+	
 	//simulation
 	void lance_simulation();
 	void desintegration_particules();
