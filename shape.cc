@@ -78,8 +78,8 @@ void draw_circle_rep(const Circle& c) {
     draw_circle_rep_border(c.rayon, c.centre.x, c.centre.y);
 }
 
-void draw_circle_neutr(const Circle& c) {
-    draw_circle_neutr_border(c.rayon, c.centre.x, c.centre.y);
+void draw_circle_neutr(const Circle& c, double orientation) {
+    draw_circle_neutr_border(c.rayon, c.centre.x, c.centre.y, orientation);
 }
 
 void draw_circle_spatial(const Circle& c) {

@@ -10,7 +10,8 @@ void empty_world();
 
 //void set_color(int indice);
 void draw_filled_square(double longueur_cote, double x, double y);
-void draw_circle_neutr_border(double rayon, double x, double y);
+void draw_circle_neutr_border(double rayon, double x, double y, double orientation);
 void draw_circle_rep_border(double rayon, double x, double y);
 void draw_circle_spatial_border(double rayon, double x, double y);
+//void draw_orientation_line(double rayon, double x, double y, double orientation);
 #endif // GTKMM_EXAMPLE_MYAREA_H

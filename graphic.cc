@@ -48,12 +48,22 @@ void draw_filled_square(double longueur_cote, double x, double y) {
 }
 
 
-void draw_circle_neutr_border(double rayon, double x, double y){
+void draw_circle_neutr_border(double rayon, double x, double y, double orientation){
 	(*ptcr)->save();
 	(*ptcr)->arc(x, y, rayon, 0.0, 2.0 * M_PI); // full circle
 	(*ptcr)->set_source_rgb(0.0, 0.0, 0.0);    
 	(*ptcr)->set_line_width(0.5);
 	(*ptcr)->stroke();
+	
+	double x2 = x + rayon * cos(orientation);
+	double y2 = y + rayon * sin(orientation);
+	
+	(*ptcr)->set_line_width(0.5);
+	(*ptcr)->set_source_rgb(0.0, 1.0, 0.0); // Set the line color (e.g., red)
+	(*ptcr)->move_to(x, y);
+	(*ptcr)->line_to(x2, y2);
+	(*ptcr)->stroke();
+	
 }
 
 void draw_circle_rep_border(double rayon, double x, double y){
@@ -77,8 +87,24 @@ void draw_circle_rep_border(double rayon, double x, double y){
 void draw_circle_spatial_border(double rayon, double x, double y){
 	(*ptcr)->save();
 	(*ptcr)->arc(x, y, rayon, 0.0, 2.0 * M_PI); // full circle
-	(*ptcr)->set_source_rgb(0.0, 0.0, 1.0);    
+	(*ptcr)->set_source_rgb(0.0, 0.8, 1.0);    
 	(*ptcr)->set_line_width(0.5);
 	(*ptcr)->stroke();
 }
+/*
+void draw_orientation_line(double rayon, double x, double y, double orientation){
+    double x1 = x;
+    double y1 = y;
 
+    double x2 = x1 + rayon * cos(orientation);
+    double y2 = y1 + rayon * sin(orientation);
+
+    (*ptcr)->save();
+    (*ptcr)->set_line_width(0.5);
+    (*ptcr)->set_source_rgb(1.0, 0.0, 0.0); // Set the line color (e.g., red)
+    (*ptcr)->move_to(x1, y1);
+    (*ptcr)->line_to(x2, y2);
+    (*ptcr)->stroke();
+    (*ptcr)->restore();
+}
+*/

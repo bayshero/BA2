@@ -221,11 +221,18 @@ void draw_robot_rep(const R_reparateur& r){
 
 
 void draw_robot_neutr(const R_neutraliseur& r){
-	draw_circle_neutr(r.GetCircle());
+	Circle c = r.GetCircle();
+    draw_circle_neutr(r.GetCircle(), r.GetOrientation());
+  //  draw_orientation_line(c.centre.x, c.centre.y, c.rayon, r.GetOrientation());
 }
+
 
 void draw_robot_spatial(const R_spatial& r){
 	draw_circle_spatial(r.GetCircle());
+}
+
+double R_neutraliseur::GetOrientation() const {
+    return orientation;
 }
 
 void R_spatial::delete_rs(){

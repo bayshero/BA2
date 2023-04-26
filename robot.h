@@ -9,6 +9,7 @@
 #define ROBOT_H
 #include "particule.h"
 #include "shape.h"
+#include "graphic.h"
 
 class Robot{
 protected :
@@ -70,6 +71,7 @@ public:
 	bool superposition_p_r_neutraliseur(const Particule& r) const;
 	bool error_attribut(const R_spatial& rs) const;
 	std::string get_as_string();
+	double GetOrientation() const;
 
 };
 
