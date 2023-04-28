@@ -1,8 +1,8 @@
 /*!
   \file   simulation.cc
-  \author Charly Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly Guardia 60%, Gauthier de Mercey 40%
+  \date   avril 2023
+  \version 2
 */
 
 #include "constantes.h"
@@ -31,6 +31,7 @@ Simulation::Simulation(){}
 
 //lit le fichier text reçu 
 void Simulation::lecture(string file_name){
+	e.seed(1); //à chaque lecture, reset la sequence de nombres aleatoires
 	string ligne;
 	ifstream fichier(file_name);
 	if (!fichier.fail()){			//message d'erreur
@@ -41,7 +42,6 @@ void Simulation::lecture(string file_name){
 			lire_ligne(ligne);
 		}
 		set_nbNp();
-		e.seed(1); //à chaque lecture, reset la sequence de nombres aleatoires
 	}else exit(EXIT_FAILURE);
 }
 
@@ -287,8 +287,10 @@ void Simulation::desintegration_particules() {
     bernoulli_distribution b(p / particules.size());
     vector<Particule> new_particules;
     cout<< b(e)<<endl; 
+    
     for (auto particule : particules) {
 		double new_longueur = (particule.getLongueur()/2) - (2*epsil_zero);
+		//cout<< b(e)<<endl; 
 		if (b(e)) {
 			//desintegration d'une particule si sa future taile > d_particule + e0
 			if (new_longueur > d_particule_min + epsil_zero) {
@@ -317,6 +319,7 @@ void Simulation::desintegration_particules() {
 			new_particules.push_back(particule);
 		}
 	}
+
     // Remplace le vecteur original par le nouveau vecteur
     particules = new_particules;
 }

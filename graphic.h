@@ -1,3 +1,10 @@
+/*!
+  \file   graphic.h
+  \author Charly Guardia 0%, Gauthier de Mercey 100%
+  \date   avril 2023
+  \version 2
+*/
+
 #ifndef GTKMM_EXAMPLE_MYAREA_H
 #define GTKMM_EXAMPLE_MYAREA_H
 

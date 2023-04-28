@@ -1,8 +1,8 @@
 /*!
   \file   robot.h
-  \author Charly Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly Guardia 95%, Gauthier de Mercey 5%
+  \date   avril 2023
+  \version 2
 */
 
 #ifndef ROBOT_H

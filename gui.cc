@@ -1,3 +1,10 @@
+/*!
+  \file   gui.cc
+  \author Charly Guardia 50%, Gauthier de Mercey 50%
+  \date   avril 2023
+  \version 2
+*/
+
 #include "gui.h"
 #include <iostream>
 

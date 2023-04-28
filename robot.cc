@@ -1,8 +1,8 @@
 /*!
   \file   robot.cc
-  \author Charly Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly Guardia 90%, Gauthier de Mercey 10%
+  \date   avril 2023
+  \version 2
 */
 
 #include <iostream>
@@ -182,6 +182,7 @@ bool R_spatial::rs_in_domain() const{
 	}
 }
 
+//écrit une ligne avec les données du robot spatial
 string R_spatial::get_as_string() {
 	string line = to_string(cercle.centre.x) + " " + to_string(cercle.centre.y) 
 											 + " " + to_string(nbUpdate)
@@ -193,6 +194,7 @@ string R_spatial::get_as_string() {
 	return line;
 }
 
+//écrit une ligne avec les données du robot neutraliseur
 string R_neutraliseur::get_as_string(){
 	string panne_str;
 	if (panne){
@@ -209,6 +211,7 @@ string R_neutraliseur::get_as_string(){
 	return line;
 }
 
+//écrit une ligne avec les données du robot réparateur
 string R_reparateur::get_as_string(){
 	string line = to_string(cercle.centre.x) + " " + to_string(cercle.centre.y);
 	
@@ -223,21 +226,22 @@ void R_spatial::setNbNp(int newNbNp){
 	nbNp = newNbNp;
 }
 
+//appelle la fonction de dessin du robot réparateur
 void R_reparateur::draw_robot_rep(){
 	draw_circle_rep(cercle);
 }
 
-
+//appelle la fonction de dessin du robot neutraliseur
 void R_neutraliseur::draw_robot_neutr(){
     draw_circle_neutr(cercle, orientation);
 }
 
-
+//appelle la fonction de dessin du robot spatial
 void R_spatial::draw_robot_spatial(){
 	draw_circle_spatial(cercle);
 }
 
-
+//réinitialise les données stockées dans le robot spatial
 void R_spatial::delete_rs(){
 	S2d pos = {0,0};
 	cercle = {0,pos};

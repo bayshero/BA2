@@ -1,8 +1,8 @@
 /*!
   \file   shape.cc
-  \author Charly  Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly  Guardia 70%, Gauthier de Mercey 30%
+  \date   avril 2023
+  \version 2
 */
 
 #include "shape.h"
@@ -74,22 +74,26 @@ bool collision_cs(Circle c2, Square s1, bool use_epsil){
 	return collision;
 }
 
+//dessine un robot spatial
 void draw_circle_spatial(const Circle& c) {
 	draw_circle(c.rayon, c.centre.x, c.centre.y, 4);
 	draw_dot(c.centre.x, c.centre.y);
 }
 
+//dessine un robot neutraliseur
 void draw_circle_neutr(const Circle& c, double orientation) {
 	draw_circle(c.rayon, c.centre.x, c.centre.y, 1);
 	draw_dot(c.centre.x, c.centre.y);
 	draw_line(c.rayon, c.centre.x, c.centre.y, orientation);
 }
 
+//dessine un robot réparateur
 void draw_circle_rep(const Circle& c) {
 	fill_circle(c.rayon, c.centre.x, c.centre.y, 2);
 	draw_circle(c.rayon, c.centre.x, c.centre.y, 1);
 }
 
+//dessine une particule
 void draw_square(const Square& s) {
 	draw_filled_square(s.longueur_cote, s.centre.x, s.centre.y);
 }

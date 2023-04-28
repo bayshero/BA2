@@ -1,3 +1,10 @@
+/*!
+  \file   graphic.h
+  \author Charly Guardia 0%, Gauthier de Mercey 100%
+  \date   avril 2023
+  \version 2
+*/
+
 #include "graphic.h"
 #include <iostream>
 
@@ -32,10 +39,10 @@ void set_color(int indice){
 	else if (indice == 3){ //red
 		(*ptcr)->set_source_rgb(1.0, 0.0, 0.0);
 	}
-	else if (indice == 4){//turquoise
+	else if (indice == 4){ //turquoise
 		(*ptcr)->set_source_rgb(0.0, 0.8, 1.0);
 	}
-	else if (indice == 5){//gray
+	else if (indice == 5){ //gray
 		(*ptcr)->set_source_rgb(0.5, 0.5, 0.5);
 	}
 }	

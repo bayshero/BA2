@@ -1,8 +1,8 @@
 /*!
   \file   particule.cc
-  \author Charly Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly Guardia 15%, Gauthier de Mercey 85%
+  \date   avril 2023
+  \version 2
 */
 #include <iostream>
 #include "shape.h"
@@ -44,6 +44,7 @@ bool Particule::in_domaine(){
 	}
 }
 
+//initialise particule_error à false s'il y a une erreur avec la particule
 void Particule::particule_error(){
 	if (!taille_min()){
 		cout<<message::particle_too_small(s.centre.x,s.centre.y,s.longueur_cote);
@@ -81,12 +82,14 @@ bool Particule::superposition_p(const Particule& p1) const{
 	return true;
 }
 
+//écrit une ligne avec les données d'une particule
 string Particule::get_as_string(){
 	string line = to_string(s.centre.x) + " " + to_string(s.centre.y) 
 										+ " " + to_string(s.longueur_cote);
 	return line;
 }
 
+//appelle la fonction de dessin d'une particule
 void Particule::draw_particule(){
 	draw_square(s);
 }

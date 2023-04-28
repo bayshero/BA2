@@ -1,3 +1,10 @@
+/*!
+  \file   gui.h
+  \author Charly Guardia 50%, Gauthier de Mercey 50%
+  \date   avril 2023
+  \version 2
+*/
+
 #ifndef GTKMM_GUI_H
 #define GTKMM_GUI_H
 
@@ -16,15 +23,15 @@
 #include <gtkmm/drawingarea.h>
 #include "constantes.h"
 
-struct Frame // Model Framing and window parameters
+struct Frame // paramètre du cadre
 {
 	double xMin; // frame parameters
 	double xMax;
 	double yMin;
 	double yMax;
-	double asp;  // frame aspect ratio
-	int height;  // window height
-	int width;   // window width
+	double asp;  // cadre aspect ratio
+	int height;  // hauteur de la fenêtre
+	int width;   // largeur de la fenêtre
 };
 
 

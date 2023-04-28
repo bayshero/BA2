@@ -1,8 +1,8 @@
 /*!
   \file   shape.h
-  \author Charly  Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly  Guardia 70%, Gauthier de Mercey 30%
+  \date   avril 2023
+  \version 2
 */
 
 

@@ -1,8 +1,8 @@
 /*!
-  \file   constantes.h
+  \file   graphic.h
   \author Charly Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \date   avril 2023
+  \version 2
 */
 
 #ifndef CONSTANTES_H
