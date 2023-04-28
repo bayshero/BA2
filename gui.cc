@@ -77,9 +77,9 @@ Gui::Gui(const std::string& filename):
 	
 	//fonctions appelées par les boutons
 	button_exit.signal_clicked().connect(sigc::mem_fun(*this,
-					     &Gui::on_button_exit_clicked));
+										 &Gui::on_button_exit_clicked));
 	button_open.signal_clicked().connect(sigc::mem_fun(*this,
-						&Gui::on_button_open_clicked));
+										&Gui::on_button_open_clicked));
 	button_save.signal_clicked().connect(sigc::mem_fun(*this,
 						&Gui::on_button_save_clicked));
 	button_start.signal_clicked().connect(sigc::mem_fun(*this,
@@ -316,10 +316,8 @@ bool Gui::on_window_key_pressed(guint keyval, guint, Gdk::ModifierType state)
     return false;
 }
 
-
-// default Model Framing and window parameters
+// parametres par default du cadre et de la fenetre
 static Frame default_frame = {-dmax, dmax, -dmax, dmax, 1, 500, 500}; 
-
 
 MyArea::MyArea(){
 	set_draw_func(sigc::mem_fun(*this, &MyArea::on_draw));   
@@ -329,10 +327,9 @@ MyArea::MyArea(){
 MyArea::~MyArea(){
 }
 
-// defining the Model space frame to visualize in the window canvas
+// definition du cadre de l'espace modele a visualiser dans le canvas de la fenetre
 void MyArea::setFrame(Frame f){
-	if((f.xMin <= f.xMax) and (f.yMin <= f.yMax) and (f.height > 0))
-	{
+	if((f.xMin <= f.xMax) and (f.yMin <= f.yMax) and (f.height > 0)){
 		f.asp = f.width/f.height;
 		frame = f;
 	}
@@ -344,63 +341,53 @@ void MyArea::adjustFrame(int width, int height){
 	frame.width  = width;
 	frame.height = height;
 
-	// Preventing distorsion by adjusting the frame (cadrage)
-	// to have the same proportion as the graphical area
-	
-    // use the reference framing as a guide for preventing distortion
-    double new_aspect_ratio((double)width/height);
-    if( new_aspect_ratio > default_frame.asp)
-    { // keep yMax and yMin. Adjust xMax and xMin
-	    frame.yMax = default_frame.yMax ;
-	    frame.yMin = default_frame.yMin ;	
+	// empeche la distortion en ajustant le cadre
+	// pour avoir la meme proportion que la zone graphique
+	double new_aspect_ratio((double)width/height);
+	if(new_aspect_ratio > default_frame.asp){ 
+		// conserver yMax et yMin. Ajuster xMax et xMin
+		frame.yMax = default_frame.yMax ;
+		frame.yMin = default_frame.yMin ;	
 	  
-	    double delta(default_frame.xMax - default_frame.xMin);
-	    double mid((default_frame.xMax + default_frame.xMin)/2);
-        // the new frame is centered on the mid-point along X
-	    frame.xMax = mid + 0.5*(new_aspect_ratio/default_frame.asp)*delta ;
-	    frame.xMin = mid - 0.5*(new_aspect_ratio/default_frame.asp)*delta ;		  	  
-    }
-    else
-    { // keep xMax and xMin. Adjust yMax and yMin
-	    frame.xMax = default_frame.xMax ;
-	    frame.xMin = default_frame.xMin ;
-	  	  
- 	    double delta(default_frame.yMax - default_frame.yMin);
-	    double mid((default_frame.yMax + default_frame.yMin)/2);
-        // the new frame is centered on the mid-point along Y
-	    frame.yMax = mid + 0.5*(default_frame.asp/new_aspect_ratio)*delta ;
-	    frame.yMin = mid - 0.5*(default_frame.asp/new_aspect_ratio)*delta ;		  	  
+		double delta(default_frame.xMax - default_frame.xMin);
+		double mid((default_frame.xMax + default_frame.xMin)/2);
+		// nouveau cadre est centre sur le point median suivant x
+		frame.xMax = mid + 0.5*(new_aspect_ratio/default_frame.asp)*delta ;
+		frame.xMin = mid - 0.5*(new_aspect_ratio/default_frame.asp)*delta ;		  	  
+	}
+	else{ // conserver xMax et xMin. Ajuster yMax et yMin
+		frame.xMax = default_frame.xMax ;
+		frame.xMin = default_frame.xMin ;
+	  	
+		double delta(default_frame.yMax - default_frame.yMin);
+		double mid((default_frame.yMax + default_frame.yMin)/2);
+        // le cadre est centre sur le point median suivant x
+        frame.yMax = mid + 0.5*(default_frame.asp/new_aspect_ratio)*delta ;
+		frame.yMin = mid - 0.5*(default_frame.asp/new_aspect_ratio)*delta ;		  	  
     }
 }
-
-
-
-
 
 static void orthographic_projection(const Cairo::RefPtr<Cairo::Context>& cr,
-   							 	Frame frame){
-    // déplace l'origine au centre de la fenêtre
-    cr->translate(frame.width/2, frame.height/2);
+									Frame frame){
+	// déplace l'origine au centre de la fenêtre
+	cr->translate(frame.width/2, frame.height/2);
+
+	// normalise la largeur et hauteur aux valeurs fournies par le cadrage
+	// ET inverse la direction de l'axe Y
+	cr->scale(frame.width/(frame.xMax - frame.xMin),
+			  -frame.height/(frame.yMax - frame.yMin));
  
-    // normalise la largeur et hauteur aux valeurs fournies par le cadrage
-    // ET inverse la direction de l'axe Y
-    cr->scale(frame.width/(frame.xMax - frame.xMin),
-         	-frame.height/(frame.yMax - frame.yMin));
- 
-    // décalage au centre du cadrage
-    cr->translate(-(frame.xMin + frame.xMax)/2, -(frame.yMin + frame.yMax)/2);
+	// décalage au centre du cadrage
+	cr->translate(-(frame.xMin + frame.xMax)/2, -(frame.yMin + frame.yMax)/2);
 }
 
-
-void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,const int height){
+void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,
+					 const int height){
 	adjustFrame(width, height);
 	orthographic_projection(cr, frame);
 	graphic_set_context(cr);
-	
-	
-	cr->set_source_rgb(1.0, 1.0, 1.0 );
-	cr->paint();
-
+	//initaialise monde
 	empty_world();
+	//dessine les objets, s'il y en a
 	draw_world();
 }

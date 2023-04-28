@@ -87,7 +87,7 @@ string Particule::get_as_string(){
 	return line;
 }
 
-void draw_particule(const Particule& p){
-	draw_square(p.GetSquare());
+void Particule::draw_particule(){
+	draw_square(s);
 }
 

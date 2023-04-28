@@ -328,15 +328,15 @@ void Simulation::lance_simulation() {
 
 void draw_world(){
     for (unsigned int i(0); i<Simulation::particules.size(); ++i){
-        draw_particule(Simulation::particules[i]);
+        Simulation::particules[i].draw_particule();
     }
     for (unsigned int j(0); j<Simulation::robots_neutr.size(); ++j){
-		draw_robot_neutr(Simulation::robots_neutr[j]);
+		Simulation::robots_neutr[j].draw_robot_neutr();
 	}
 	for (unsigned int k(0); k<Simulation::robots_rep.size(); ++k){
-		draw_robot_rep(Simulation::robots_rep[k]);
+		Simulation::robots_rep[k].draw_robot_rep();
 	}
-	draw_robot_spatial(Simulation::rs);
+	Simulation::rs.draw_robot_spatial();
 }
 
 void Simulation::delete_simu(){

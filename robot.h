@@ -54,6 +54,8 @@ public :
 	void setNbUpdate(int newNbUpdate);
 	
 	void delete_rs();
+	
+	void draw_robot_spatial();
 };
 
 
@@ -72,6 +74,7 @@ public:
 	bool error_attribut(const R_spatial& rs) const;
 	std::string get_as_string();
 	double GetOrientation() const;
+	void draw_robot_neutr();
 
 };
 
@@ -83,11 +86,12 @@ public :
 	bool superposition_r_reparateur(const R_reparateur& r) const;
 	bool superposition_p_r_reparateur(const Particule& r) const;
 	std::string get_as_string();
+	void draw_robot_rep();
 };
 
-void draw_robot_rep(const R_reparateur& r);
-void draw_robot_neutr(const R_neutraliseur& r);
-void draw_robot_spatial(const R_spatial& r);
+
+
+
 
 
 #endif	

@@ -25,8 +25,9 @@ Particule(Square s);  				//constructeur
 	void particule_error();
 	bool superposition_p(const Particule& p1) const;
 	std::string get_as_string();
+	void draw_particule();
 };
 
-void draw_particule(const Particule& p);
+
 
 #endif

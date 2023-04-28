@@ -215,20 +215,18 @@ void R_spatial::setNbUpdate(int newNbUpdate) {
     nbUpdate = newNbUpdate;
 }
 
-void draw_robot_rep(const R_reparateur& r){
-	draw_circle_rep(r.GetCircle());
+void R_reparateur::draw_robot_rep(){
+	draw_circle_rep(cercle);
 }
 
 
-void draw_robot_neutr(const R_neutraliseur& r){
-	Circle c = r.GetCircle();
-    draw_circle_neutr(r.GetCircle(), r.GetOrientation());
-  //  draw_orientation_line(c.centre.x, c.centre.y, c.rayon, r.GetOrientation());
+void R_neutraliseur::draw_robot_neutr(){
+    draw_circle_neutr(cercle, orientation);
 }
 
 
-void draw_robot_spatial(const R_spatial& r){
-	draw_circle_spatial(r.GetCircle());
+void R_spatial::draw_robot_spatial(){
+	draw_circle_spatial(cercle);
 }
 
 double R_neutraliseur::GetOrientation() const {
