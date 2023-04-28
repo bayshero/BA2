@@ -1,9 +1,4 @@
 #include "graphic.h"
-#include "constantes.h"
-#include <cairomm/context.h>
-#include <giomm/resource.h>
-#include <gdkmm/general.h> // set_source_pixbuf()
-#include <glibmm/fileutils.h>
 #include <iostream>
 
 static const Cairo::RefPtr<Cairo::Context>* ptcr(nullptr);

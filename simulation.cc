@@ -40,6 +40,7 @@ void Simulation::lecture(string file_name){
 			};
 			lire_ligne(ligne);
 		}
+		set_nbNp();
 		e.seed(1); //à chaque lecture, reset la sequence de nombres aleatoires
 	}else exit(EXIT_FAILURE);
 }
@@ -51,7 +52,7 @@ void Simulation::lire_ligne(string ligne){
 	Circle c1;
 	Square s1;
 	double x, y, d_particule, orient;  //a = orientation, c_n =type de coordination
-	int nbUpdate, nbNr, nbNs, nbNd, nbNp(0), nbRr, nbRs, nbP, c_n, k_update_panne;
+	int nbUpdate, nbNr, nbNs, nbNd, nbRr, nbRs, nbP, c_n, k_update_panne;
 	string panne_str;
 	static int section(NBP_), i(0);  //première ligne à lire (cond. initiale)
 	switch(section){
@@ -79,14 +80,15 @@ void Simulation::lire_ligne(string ligne){
 				exit(EXIT_FAILURE);
 			}else{
 				c1 = {r_spatial,{x,y}};
-				R_spatial rs_(c1, nbUpdate, nbNr, nbNs, nbNd, nbNp, nbRr, nbRs);
+				R_spatial rs_(c1, nbUpdate, nbNr, nbNs, nbNd, nbRr, nbRs);
 				rs= rs_;
-				if ((nbNr+nbNs+nbNp==0)or(nbRr+nbRs==0)){
-					section= NBP_;
-					i=0;
-				} else {
-					section = R_REP;
-				}
+				if ((nbNr+nbNs==0)and(nbRr+nbRs==0)){
+					section = NBP_;
+				 } else if (nbRr+nbRs==0){
+						section=R_NEUTR;
+						} else {
+							section = R_REP;
+						}
 				break;
 			}
 		case R_REP:
@@ -107,9 +109,7 @@ void Simulation::lire_ligne(string ligne){
 				exit(EXIT_FAILURE);
 			}else{
 				bool panne_ =(panne_str=="true");
-				c1.rayon=r_neutraliseur;
-				c1.centre.x=x;
-				c1.centre.y=y;
+				c1 = {r_neutraliseur,{x,y}};
 				robots_neutr.push_back(R_neutraliseur(c1, orient, k_update_panne, 
 														panne_, c_n));
 				++i;
@@ -208,11 +208,11 @@ void Simulation::parcourir_p_rs() {
 	}
 }
 
-R_spatial Simulation::GetRs() const{
+R_spatial Simulation::getRs() const{
 	return rs;
 }
 
-vector<Particule> Simulation::GetParticules() const{
+vector<Particule> Simulation::getParticules() const{
 	return particules;
 }
 
@@ -226,7 +226,7 @@ void Simulation::fin_succes(){
 void Simulation::error_check(){
 	bool_error = true;
 	
-	bool_error = rs.GetError_domain();
+	bool_error = rs.getError_domain();
 	
 	for (auto particule : particules){
 		if (bool_error){
@@ -248,6 +248,7 @@ void Simulation::error_check(){
 	}
 }
 
+//réécrit dans un fichier l'état courant de la simulation
 void Simulation::save(string save_filename) {
     std::ofstream file(save_filename);
 
@@ -285,18 +286,17 @@ void Simulation::desintegration_particules() {
     double p(desintegration_rate);
     bernoulli_distribution b(p / particules.size());
     vector<Particule> new_particules;
-    cout<< b(e)<<endl;
-    
+    cout<< b(e)<<endl; 
     for (auto particule : particules) {
-		double new_longueur = (particule.GetLongueur()/2) - (2*epsil_zero);
-		if (new_longueur > d_particule_min + epsil_zero) {
+		double new_longueur = (particule.getLongueur()/2) - (2*epsil_zero);
+		if (b(e)) {
 			//desintegration d'une particule si sa future taile > d_particule + e0
-			if (b(e)) {
+			if (new_longueur > d_particule_min + epsil_zero) {
 				// Désintégration de la particule
 				// Ajoute 4 nouvelles particules
-				double d = particule.GetLongueur() / 4;
-				double pos_x = particule.GetSquare().centre.x;
-				double pos_y = particule.GetSquare().centre.y;
+				double d = particule.getLongueur() / 4;
+				double pos_x = particule.getSquare().centre.x;
+				double pos_y = particule.getSquare().centre.y;
 				S2d centre1 = {pos_x - d, pos_y + d};
 				S2d centre2 = {pos_x - d, pos_y - d};
 				S2d centre3 = {pos_x + d, pos_y + d};
@@ -322,10 +322,11 @@ void Simulation::desintegration_particules() {
 }
 
 void Simulation::lance_simulation() {
+	//appel des fonctions en charge de lancer la simulation
     desintegration_particules();
 }
 
-
+//dessine le monde courant
 void draw_world(){
     for (unsigned int i(0); i<Simulation::particules.size(); ++i){
         Simulation::particules[i].draw_particule();
@@ -339,9 +340,21 @@ void draw_world(){
 	Simulation::rs.draw_robot_spatial();
 }
 
+//cette fonction se charge de supprimer toutes les structures de données
 void Simulation::delete_simu(){
 	particules.clear();
 	robots_neutr.clear();
 	robots_rep.clear();
 	rs.delete_rs();
+}
+
+//initaliase le nb de robots en panne grâce à la variable booléenne des robots neutr.
+void Simulation::set_nbNp(){
+	int val(0);
+	for (auto robot_neutr : robots_neutr){
+		if (robot_neutr.getPanne() == true) {
+			val = val + 1;
+		}
+	}
+	rs.setNbNp(val);
 }

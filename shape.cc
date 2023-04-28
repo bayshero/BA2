@@ -94,3 +94,4 @@ void draw_square(const Square& s) {
 	draw_filled_square(s.longueur_cote, s.centre.x, s.centre.y);
 }
 
+

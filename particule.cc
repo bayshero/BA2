@@ -15,7 +15,7 @@ using namespace std;
 Particule::Particule(Square s)
 	: s(s){}
 	
-double Particule::GetLongueur() const{
+double Particule::getLongueur() const{
 	return s.longueur_cote;
 }
 
@@ -63,7 +63,7 @@ void Particule::particule_error(){
 	}
 }
 	
-Square Particule::GetSquare() const {
+Square Particule::getSquare() const {
 	return s;
 }
 

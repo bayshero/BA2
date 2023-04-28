@@ -10,6 +10,7 @@
 
 #include "shape.h"
 
+using namespace std;
 
 constexpr short unsigned maxF(25);
 constexpr double dmax(128.);

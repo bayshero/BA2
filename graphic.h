@@ -3,6 +3,11 @@
 
 #include <gtkmm/drawingarea.h>
 #include <gdkmm/pixbuf.h>
+#include "constantes.h"
+#include <cairomm/context.h>
+#include <giomm/resource.h>
+#include <gdkmm/general.h> // set_source_pixbuf()
+#include <glibmm/fileutils.h>
 
 void graphic_set_context(const Cairo::RefPtr<Cairo::Context>& cr);
 void empty_world();

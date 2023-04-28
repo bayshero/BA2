@@ -16,8 +16,8 @@ private:
 public:
 Particule(Square s);  				//constructeur
 	
-	double GetLongueur() const;
-	Square GetSquare() const;
+	double getLongueur() const;
+	Square getSquare() const;
 	bool getError_initialisation() const;
 	
 	bool taille_min();
@@ -25,9 +25,8 @@ Particule(Square s);  				//constructeur
 	void particule_error();
 	bool superposition_p(const Particule& p1) const;
 	std::string get_as_string();
+	
 	void draw_particule();
 };
-
-
 
 #endif

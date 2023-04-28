@@ -28,7 +28,6 @@ struct Frame // Model Framing and window parameters
 };
 
 
-
 class MyArea : public Gtk::DrawingArea
 {
 public:
@@ -54,6 +53,13 @@ protected:
 	Gtk::Label general, info, nbUpdate, nbP, nbRs, nbRr, nbNs, nbNp, nbNd, nbNr;
 	Gtk::Button button_exit, button_open, button_save,  button_start, button_step;
 	Gtk::Separator separator1;
+	
+    void setup_big_box();
+    void setup_general_box();
+    void setup_info_box();
+    void setup_buttons_box();
+    void connect_buttons_signals();
+    void add_key_controller();
 	
 	void on_button_exit_clicked();
 	void on_button_open_clicked();
@@ -82,6 +88,10 @@ protected:
 	
 	MyArea m_area;
 };
+
+
+
+//void draw_axes(const Cairo::RefPtr<Cairo::Context>& cr, Frame frame);
 
 #endif
 
