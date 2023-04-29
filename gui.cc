@@ -345,11 +345,9 @@ bool Gui::on_window_key_pressed(guint keyval, guint, Gdk::ModifierType state){
 	switch(gdk_keyval_to_unicode(keyval))
 	{
 		case 's':
-			std::cout << "key 's' has been pressed !" << std::endl;
 			on_button_start_clicked();
 			return true;
 		case '1':
-			std::cout << " key '1' has been pressed !" << std::endl;
 			on_button_step_clicked();
 			return true;
 	}
