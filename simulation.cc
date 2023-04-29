@@ -285,12 +285,10 @@ bool Simulation::getError_simu() const{
 void Simulation::desintegration_particules() {
     double p(desintegration_rate);
     bernoulli_distribution b(p / particules.size());
-    vector<Particule> new_particules;
-    cout<< b(e)<<endl; 
+    vector<Particule> new_particules; 
     
     for (auto particule : particules) {
 		double new_longueur = (particule.getLongueur()/2) - (2*epsil_zero);
-		//cout<< b(e)<<endl; 
 		if (b(e)) {
 			//desintegration d'une particule si sa future taile > d_particule + e0
 			if (new_longueur > d_particule_min + epsil_zero) {

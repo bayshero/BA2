@@ -17,6 +17,8 @@
 
 using namespace std;
 
+static default_random_engine e;
+
 class Simulation{
 public :
 
@@ -63,7 +65,7 @@ public :
 private :
 
 	bool bool_error; //false si il y a une erreur détectée dans la simulation
-	std::default_random_engine e;
+
 };
 
 void draw_world();
