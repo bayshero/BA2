@@ -224,7 +224,7 @@ void Gui::on_file_dialog_response_open(int response_id,Gtk::FileChooserDialog* d
 	}
 
 	// hide the dialog
-dialog->hide();
+	dialog->hide();
 }
 
 //bouton save
@@ -308,6 +308,7 @@ bool Gui::on_timeout(){
 	return true;
 }
 
+//bouton step
 void Gui::on_button_step_clicked(){
 	//bouton step fonctionne que si started vaut false
     if (!started) {
@@ -324,6 +325,7 @@ void Gui::on_button_step_clicked(){
     }
 }	
 
+//update le compteur de mise à jour sur la fenêtre
 void Gui::maj_label(int nbUpdate_){
 	std::stringstream s1;
     s1 << "mises à jour:" << nbUpdate_;
