@@ -20,10 +20,12 @@
 
 using namespace std;
 
-vector<Particule> Simulation::particules;
-vector<R_reparateur> Simulation::robots_rep;
-vector<R_neutraliseur> Simulation::robots_neutr;
-R_spatial Simulation::rs;
+static vector<Particule> particules;
+static vector<R_neutraliseur> robots_neutr;
+static vector<R_reparateur> robots_rep;
+static R_spatial rs;
+
+static default_random_engine e;
 
 
 Simulation::Simulation(){}
@@ -329,16 +331,16 @@ void Simulation::lance_simulation() {
 
 //dessine le monde courant
 void draw_world(){
-    for (unsigned int i(0); i<Simulation::particules.size(); ++i){
-        Simulation::particules[i].draw_particule();
+    for (unsigned int i(0); i<particules.size(); ++i){
+        particules[i].draw_particule();
     }
-    for (unsigned int j(0); j<Simulation::robots_neutr.size(); ++j){
-		Simulation::robots_neutr[j].draw_robot_neutr();
+    for (unsigned int j(0); j<robots_neutr.size(); ++j){
+		robots_neutr[j].draw_robot_neutr();
 	}
-	for (unsigned int k(0); k<Simulation::robots_rep.size(); ++k){
-		Simulation::robots_rep[k].draw_robot_rep();
+	for (unsigned int k(0); k<robots_rep.size(); ++k){
+		robots_rep[k].draw_robot_rep();
 	}
-	Simulation::rs.draw_robot_spatial();
+	rs.draw_robot_spatial();
 }
 
 //cette fonction se charge de supprimer toutes les structures de données

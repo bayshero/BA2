@@ -28,7 +28,7 @@ Gui::Gui(const std::string& filename):
 	//initialisation simulation
 	this->filename = filename;
 	if (!filename.empty()) { 
-		simu.lecture(filename); //c_str renvoie un pointeur const char*
+		simu.lecture(filename);
 		simu.error_check();
 		if(!simu.getError_simu()){
 			//appeler fonction qui efface les données et crée un monde blanc 
@@ -223,7 +223,6 @@ void Gui::on_file_dialog_response_open(int response_id,Gtk::FileChooserDialog* d
 			break;
 	}
 
-	// hide the dialog
 	dialog->hide();
 }
 

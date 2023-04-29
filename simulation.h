@@ -17,8 +17,6 @@
 
 using namespace std;
 
-static default_random_engine e;
-
 class Simulation{
 public :
 
@@ -55,12 +53,6 @@ public :
 	//simulation
 	void lance_simulation();
 	void desintegration_particules();
-	
-	//stockage des particules et des robots
-	static vector<Particule> particules;
-	static vector<R_neutraliseur> robots_neutr;
-	static vector<R_reparateur> robots_rep;
-	static R_spatial rs;
 	
 private :
 
