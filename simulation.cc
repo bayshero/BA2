@@ -1,8 +1,8 @@
 /*!
   \file   simulation.cc
-  \author Charly Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly Guardia 60%, Gauthier de Mercey 40%
+  \date   avril 2023
+  \version 2
 */
 
 #include "constantes.h"
@@ -20,17 +20,20 @@
 
 using namespace std;
 
-vector<Particule> Simulation::particules;
-vector<R_reparateur> Simulation::robots_rep;
-vector<R_neutraliseur> Simulation::robots_neutr;
-R_spatial Simulation::rs;
+static vector<Particule> particules;
+static vector<R_neutraliseur> robots_neutr;
+static vector<R_reparateur> robots_rep;
+static R_spatial rs;
+
+static default_random_engine e;
 
 
 Simulation::Simulation(){}
 
 
 //lit le fichier text reçu 
-void Simulation::lecture(string file_name){	
+void Simulation::lecture(string file_name){
+	e.seed(1); //à chaque lecture, reset la sequence de nombres aleatoires
 	string ligne;
 	ifstream fichier(file_name);
 	if (!fichier.fail()){			//message d'erreur
@@ -40,7 +43,8 @@ void Simulation::lecture(string file_name){
 			};
 			lire_ligne(ligne);
 		}
-		e.seed(1); //à chaque lecture, reset la sequence de nombres aleatoires
+		set_nbNp();
+		triParticule();
 	}else exit(EXIT_FAILURE);
 }
 
@@ -51,7 +55,7 @@ void Simulation::lire_ligne(string ligne){
 	Circle c1;
 	Square s1;
 	double x, y, d_particule, orient;  //a = orientation, c_n =type de coordination
-	int nbUpdate, nbNr, nbNs, nbNd, nbNp(0), nbRr, nbRs, nbP, c_n, k_update_panne;
+	int nbUpdate, nbNr, nbNs, nbNd, nbRr, nbRs, nbP, c_n, k_update_panne;
 	string panne_str;
 	static int section(NBP_), i(0);  //première ligne à lire (cond. initiale)
 	switch(section){
@@ -64,9 +68,7 @@ void Simulation::lire_ligne(string ligne){
 		case PARTICULE:
 			if(!(data>>x>>y>>d_particule)) exit(EXIT_FAILURE);
 			else {
-				s1.centre.x=x;
-				s1.centre.y=y;
-				s1.longueur_cote=d_particule;
+				s1 = {{x,y},d_particule};
 				Particule c(s1);
 				particules.push_back(c);  //ajoute chaque particule à son vector
 				++i;
@@ -80,20 +82,22 @@ void Simulation::lire_ligne(string ligne){
 			if(!(data>>x>>y>>nbUpdate>>nbNr>>nbNs>>nbNd>>nbRr>>nbRs)){
 				exit(EXIT_FAILURE);
 			}else{
-				c1.rayon = r_spatial;
-				c1.centre.x=x;
-				c1.centre.y=y;
-				R_spatial rs_(c1, nbUpdate, nbNr, nbNs, nbNd, nbNp, nbRr, nbRs);
-				rs= rs_;	
-				section = R_REP;
+				c1 = {r_spatial,{x,y}};
+				R_spatial rs_(c1, nbUpdate, nbNr, nbNs, nbNd, nbRr, nbRs);
+				rs= rs_;
+				if ((nbNr+nbNs==0)and(nbRr+nbRs==0)){
+					section = NBP_;
+				 } else if (nbRr+nbRs==0){
+						section=R_NEUTR;
+						} else {
+							section = R_REP;
+						}
 				break;
 			}
 		case R_REP:
 			if (!(data>>x>>y)) exit(EXIT_FAILURE);
 			else {
-				c1.rayon= r_reparateur;
-				c1.centre.x=x;
-				c1.centre.y=y;
+				c1 = {r_reparateur,{x,y}};
 				R_reparateur rr(c1);
 				robots_rep.push_back(rr);
 				++i;
@@ -104,13 +108,11 @@ void Simulation::lire_ligne(string ligne){
 				break;
 			}
 		case R_NEUTR:
-			if (!(data>>x>>y>>orient>>c_n>>panne_str>>k_update_panne)){     
+			if (!(data>>x>>y>>orient>>c_n>>panne_str>>k_update_panne)){    
 				exit(EXIT_FAILURE);
 			}else{
 				bool panne_ =(panne_str=="true");
-				c1.rayon=r_neutraliseur;
-				c1.centre.x=x;
-				c1.centre.y=y;
+				c1 = {r_neutraliseur,{x,y}};
 				robots_neutr.push_back(R_neutraliseur(c1, orient, k_update_panne, 
 														panne_, c_n));
 				++i;
@@ -209,11 +211,11 @@ void Simulation::parcourir_p_rs() {
 	}
 }
 
-R_spatial Simulation::GetRs() const{
+R_spatial Simulation::getRs() const{
 	return rs;
 }
 
-vector<Particule> Simulation::GetParticules() const{
+vector<Particule> Simulation::getParticules() const{
 	return particules;
 }
 
@@ -227,7 +229,7 @@ void Simulation::fin_succes(){
 void Simulation::error_check(){
 	bool_error = true;
 	
-	bool_error = rs.GetError_domain();
+	bool_error = rs.getError_domain();
 	
 	for (auto particule : particules){
 		if (bool_error){
@@ -249,6 +251,7 @@ void Simulation::error_check(){
 	}
 }
 
+//réécrit dans un fichier l'état courant de la simulation
 void Simulation::save(string save_filename) {
     std::ofstream file(save_filename);
 
@@ -285,20 +288,18 @@ bool Simulation::getError_simu() const{
 void Simulation::desintegration_particules() {
     double p(desintegration_rate);
     bernoulli_distribution b(p / particules.size());
-    vector<Particule> new_particules;
-    //e.seed(1);
-    cout<< b(e)<<endl;
+    vector<Particule> new_particules; 
     
     for (auto particule : particules) {
-		double new_longueur = particule.GetLongueur() / 2 - 2 * epsil_zero;
-		if (new_longueur > d_particule_min + epsil_zero) {
+		double new_longueur = (particule.getLongueur()/2) - (2*epsil_zero);
+		if (b(e)) {
 			//desintegration d'une particule si sa future taile > d_particule + e0
-			if (b(e)) {
+			if (new_longueur > d_particule_min + epsil_zero) {
 				// Désintégration de la particule
 				// Ajoute 4 nouvelles particules
-				double d = particule.GetLongueur() / 4;
-				double pos_x = particule.GetSquare().centre.x;
-				double pos_y = particule.GetSquare().centre.y;
+				double d = particule.getLongueur() / 4;
+				double pos_x = particule.getSquare().centre.x;
+				double pos_y = particule.getSquare().centre.y;
 				S2d centre1 = {pos_x - d, pos_y + d};
 				S2d centre2 = {pos_x - d, pos_y - d};
 				S2d centre3 = {pos_x + d, pos_y + d};
@@ -319,33 +320,96 @@ void Simulation::desintegration_particules() {
 			new_particules.push_back(particule);
 		}
 	}
+
     // Remplace le vecteur original par le nouveau vecteur
     particules = new_particules;
 }
 
 void Simulation::lance_simulation() {
+	//appel des fonctions en charge de lancer la simulation
     desintegration_particules();
+    
+    robots_neutr_cible();
+    //for (auto robot_neutr : robots_neutr){
+		//cout<<"***************************************"<<endl;
+		//cout<<robot_neutr.getGoal().x<<" "<< robot_neutr.getGoal().y<<endl;
+	//}
 }
 
-
+//dessine le monde courant
 void draw_world(){
-    for (unsigned int i(0); i<Simulation::particules.size(); ++i){
-        draw_particule(Simulation::particules[i]);
+    for (unsigned int i(0); i<particules.size(); ++i){
+        particules[i].draw_particule();
     }
-    for (unsigned int j(0); j<Simulation::robots_neutr.size(); ++j){
-		draw_robot_neutr(Simulation::robots_neutr[j]);
+    for (unsigned int j(0); j<robots_neutr.size(); ++j){
+		robots_neutr[j].draw_robot_neutr();
 	}
-	for (unsigned int k(0); k<Simulation::robots_rep.size(); ++k){
-		draw_robot_rep(Simulation::robots_rep[k]);
+	for (unsigned int k(0); k<robots_rep.size(); ++k){
+		robots_rep[k].draw_robot_rep();
 	}
-	draw_robot_spatial(Simulation::rs);
+	rs.draw_robot_spatial();
 }
 
+//cette fonction se charge de supprimer toutes les structures de données
 void Simulation::delete_simu(){
 	particules.clear();
 	robots_neutr.clear();
 	robots_rep.clear();
 	rs.delete_rs();
+}
+
+//initaliase le nb de robots en panne grâce à la variable booléenne des robots neutr.
+void Simulation::set_nbNp(){
+	int val(0);
+	for (auto robot_neutr : robots_neutr){
+		if (robot_neutr.getPanne() == true) {
+			val = val + 1;
+		}
+	}
+	rs.setNbNp(val);
+}
+
+void Simulation::robots_neutr_cible(){
+	
+	//pour chaque particule, trouver le robot neutraliseur le plus proche
+	//et lui donner cette particule comme but
+	for (const auto& particule : particules){
+		//cout<<"**************************"<<endl;
+		//cout <<particule.getSquare().centre.x<<" "<<particule.getSquare().centre.y<<endl;
+		double minDistance = 1000000;
+		R_neutraliseur* R_neutr_proche = nullptr;
+		
+		for (auto& robot_neutr : robots_neutr){
+			double part_x = particule.getSquare().centre.x;
+			double part_y = particule.getSquare().centre.y;
+			double robot_x = robot_neutr.getCircle().centre.x;
+			double robot_y = robot_neutr.getCircle().centre.y;
+			S2d vecteur_robot_part = {part_x - robot_x, part_y - robot_y};
+			double distance =  s2d_norm(vecteur_robot_part);
+			
+			if (distance< minDistance){
+				minDistance = distance;
+				R_neutr_proche = &robot_neutr;
+			}
+		}
+		R_neutr_proche->setGoal(particule.getSquare().centre);
+	}
+	
+}
+
+//tri le vector de particules par ordre décroissant de taille
+void Simulation::triParticule(){
+	for (unsigned int i(0); i< particules.size(); ++i){
+		unsigned int maxIndex = i;
+		for (unsigned int j = i+ 1; j < particules.size(); ++j){
+			if (particules[j].getLongueur() > particules[maxIndex].getLongueur()){
+				maxIndex = j;
+			}
+		}
+		if (maxIndex != i) {
+			std::swap(particules[i], particules[maxIndex]);
+		}
+	}
 }
 
 

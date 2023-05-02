@@ -1,8 +1,8 @@
 /*!
   \file   robot.cc
-  \author Charly Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly Guardia 90%, Gauthier de Mercey 10%
+  \date   avril 2023
+  \version 2
 */
 
 #include <iostream>
@@ -20,9 +20,9 @@ Robot::Robot(Circle c)
 Robot::Robot() {}							
 
 R_spatial::R_spatial(Circle c, int nbUpdate_, int nbNr_, int nbNs_, int nbNd_, 
-					int nbNp_, int nbRr_, int nbRs_)
+					 int nbRr_, int nbRs_)
 	: Robot(c), nbUpdate(nbUpdate_), nbNr(nbNr_), nbNs(nbNs_), nbNd(nbNd_), 
-				nbNp(nbNp_), nbRr(nbRr_), nbRs(nbRs_)
+				nbRr(nbRr_), nbRs(nbRs_)
 {
 	nbN= nbNr_+nbNs_+nbNd_; nbR=nbRr_+nbRs_;
 	if (!rs_in_domain()){
@@ -39,47 +39,51 @@ R_spatial::R_spatial()
 R_reparateur::R_reparateur(Circle c)
 	: Robot(c) {}
 
-R_neutraliseur::R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_)
+R_neutraliseur::R_neutraliseur(Circle c, double a, int k_update_, bool panne_,int c_n_)
 	: Robot(c), orientation(a), k_update(k_update_) , panne(panne_), c_n(c_n_) {}
 
 
-Circle Robot::GetCircle() const {
+Circle Robot::getCircle() const {
     return cercle;
 }
 
-int R_neutraliseur::GetKupdate() const{
+int R_neutraliseur::getKupdate() const{
 	return k_update;
 }
 
-int R_spatial::GetNbUpdate() const{
+int R_neutraliseur::getPanne() const{
+	return panne;
+}
+
+int R_spatial::getNbUpdate() const{
 	return nbUpdate;
 }
 
-int R_spatial::GetNbRs() const{
+int R_spatial::getNbRs() const{
 	return nbRs;
 }
 
-int R_spatial::GetNbRr() const{
+int R_spatial::getNbRr() const{
 	return nbRr;
 }
 
-int R_spatial::GetNbNs() const{
+int R_spatial::getNbNs() const{
 	return nbNs;
 }
 
-int R_spatial::GetNbNp() const{
+int R_spatial::getNbNp() const{
 	return nbNp;
 }
 
-int R_spatial::GetNbNd() const{
+int R_spatial::getNbNd() const{
 	return nbNd;
 }
 
-int R_spatial::GetNbNr() const{
+int R_spatial::getNbNr() const{
 	return nbNr;
 }
 
-bool R_spatial::GetError_domain() const{
+bool R_spatial::getError_domain() const{
 	return error_domain;
 }
 
@@ -118,10 +122,10 @@ bool Robot::superposition_r_neutre_rep(const Robot& r) const{
 
 //vérifie si une particule et un robot réparateur ne se superposent pas
 bool R_reparateur::superposition_p_r_reparateur(const Particule& p) const{
-	if (collision_cs(cercle, p.GetSquare(),false)) {
-		cout<<message::particle_robot_superposition(p.GetSquare().centre.x, 
-													p.GetSquare().centre.y, 
-													p.GetSquare().longueur_cote, 
+	if (collision_cs(cercle, p.getSquare(),false)) {
+		cout<<message::particle_robot_superposition(p.getSquare().centre.x, 
+													p.getSquare().centre.y, 
+													p.getSquare().longueur_cote, 
 													cercle.centre.x,
 													cercle.centre.y, cercle.rayon);
 		return false;											
@@ -131,10 +135,10 @@ bool R_reparateur::superposition_p_r_reparateur(const Particule& p) const{
 
 //vérifie si une particule et un robot neutraliseur ne se superposent pas
 bool R_neutraliseur::superposition_p_r_neutraliseur(const Particule& p) const{
-	if (collision_cs(cercle, p.GetSquare(),false)) {
-		cout<<message::particle_robot_superposition(p.GetSquare().centre.x, 
-													p.GetSquare().centre.y,
-													p.GetSquare().longueur_cote, 
+	if (collision_cs(cercle, p.getSquare(),false)) {
+		cout<<message::particle_robot_superposition(p.getSquare().centre.x, 
+													p.getSquare().centre.y,
+													p.getSquare().longueur_cote, 
 													cercle.centre.x, 
 													cercle.centre.y, cercle.rayon);
 		return false;											
@@ -144,9 +148,9 @@ bool R_neutraliseur::superposition_p_r_neutraliseur(const Particule& p) const{
 
 //vérifie que le k_update_panne d'un neutraliseur soit inférieur ou égal à nbUpdate 
 bool R_neutraliseur::error_attribut(const R_spatial& rs) const{
-	if(k_update>rs.GetNbUpdate()){
+	if(k_update>rs.getNbUpdate()){
 		cout<<message::invalid_k_update(cercle.centre.x, cercle.centre.y, 
-										k_update, rs.GetNbUpdate());
+										k_update, rs.getNbUpdate());
 		return false;								
 	}
 	return true;
@@ -154,10 +158,10 @@ bool R_neutraliseur::error_attribut(const R_spatial& rs) const{
 
 //vérifie si une particule et le robot spatial ne se superposent pas
 bool R_spatial::superposition_p_rs(const Particule& p) const{
-	if (collision_cs(cercle, p.GetSquare(),false)) {
-		cout<<message::particle_robot_superposition(p.GetSquare().centre.x, 
-													p.GetSquare().centre.y, 
-													p.GetSquare().longueur_cote, 
+	if (collision_cs(cercle, p.getSquare(),false)) {
+		cout<<message::particle_robot_superposition(p.getSquare().centre.x, 
+													p.getSquare().centre.y, 
+													p.getSquare().longueur_cote, 
 													cercle.centre.x, 
 													cercle.centre.y, cercle.rayon);
 		return false;										
@@ -178,6 +182,7 @@ bool R_spatial::rs_in_domain() const{
 	}
 }
 
+//écrit une ligne avec les données du robot spatial
 string R_spatial::get_as_string() {
 	string line = to_string(cercle.centre.x) + " " + to_string(cercle.centre.y) 
 											 + " " + to_string(nbUpdate)
@@ -189,6 +194,7 @@ string R_spatial::get_as_string() {
 	return line;
 }
 
+//écrit une ligne avec les données du robot neutraliseur
 string R_neutraliseur::get_as_string(){
 	string panne_str;
 	if (panne){
@@ -205,29 +211,37 @@ string R_neutraliseur::get_as_string(){
 	return line;
 }
 
+//écrit une ligne avec les données du robot réparateur
 string R_reparateur::get_as_string(){
 	string line = to_string(cercle.centre.x) + " " + to_string(cercle.centre.y);
 	
 	return line;
 }
 
-void R_spatial::setNbUpdate(int newNbUpdate) {
-    nbUpdate = newNbUpdate;
+void R_spatial::setNbUpdate(int newNbUpdate){
+	nbUpdate = newNbUpdate;
 }
 
-void draw_robot_rep(const R_reparateur& r){
-	draw_circle_rep(r.GetCircle());
+void R_spatial::setNbNp(int newNbNp){
+	nbNp = newNbNp;
 }
 
-
-void draw_robot_neutr(const R_neutraliseur& r){
-	draw_circle_neutr(r.GetCircle());
+//appelle la fonction de dessin du robot réparateur
+void R_reparateur::draw_robot_rep(){
+	draw_circle_rep(cercle);
 }
 
-void draw_robot_spatial(const R_spatial& r){
-	draw_circle_spatial(r.GetCircle());
+//appelle la fonction de dessin du robot neutraliseur
+void R_neutraliseur::draw_robot_neutr(){
+    draw_circle_neutr(cercle, orientation);
 }
 
+//appelle la fonction de dessin du robot spatial
+void R_spatial::draw_robot_spatial(){
+	draw_circle_spatial(cercle);
+}
+
+//réinitialise les données stockées dans le robot spatial
 void R_spatial::delete_rs(){
 	S2d pos = {0,0};
 	cercle = {0,pos};
@@ -242,3 +256,22 @@ void R_spatial::delete_rs(){
 	nbRs=0;
 	error_domain=true;
 }
+
+S2d R_neutraliseur::getGoal() const{
+	return goal;
+}
+
+void R_neutraliseur::setGoal(S2d newGoal){
+	goal = newGoal;
+}
+
+bool R_neutraliseur::getBoolGoal() const{
+	return bool_goal;
+}
+
+
+void R_neutraliseur::setBoolGoal(bool boolGoal){
+	bool_goal = boolGoal;
+}
+
+
