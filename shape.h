@@ -38,5 +38,9 @@ void draw_circle_neutr(const Circle& c, double orientation);
 void draw_square(const Square& s);
 void draw_circle_spatial(const Circle& c);
 
+S2d s2d_add_scaled_vector(S2d pos, const S2d& pos_to_goal, double scaling);
+double s2d_prod_scal(S2d v1, S2d v2);
+double s2d_norm(S2d pos);
+
 #endif
 

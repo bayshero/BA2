@@ -256,3 +256,16 @@ void R_spatial::delete_rs(){
 	nbRs=0;
 	error_domain=true;
 }
+
+void R_reparateur::move_rep_to()
+{
+	goal = {100,100}; //test 
+	S2d pos_to_goal = {goal.x - cercle.centre.x, goal.y - cercle.centre.y} ;
+	double norm(s2d_norm(pos_to_goal));
+	if(norm <= (vtran_max*delta_t)) {
+		cercle.centre = goal;
+	}
+	else {
+		cercle.centre = s2d_add_scaled_vector(cercle.centre, pos_to_goal, (vtran_max*delta_t)/norm);
+	}
+}

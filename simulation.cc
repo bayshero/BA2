@@ -327,6 +327,7 @@ void Simulation::desintegration_particules() {
 void Simulation::lance_simulation() {
 	//appel des fonctions en charge de lancer la simulation
     desintegration_particules();
+    robot_bouge();
 }
 
 //dessine le monde courant
@@ -360,4 +361,11 @@ void Simulation::set_nbNp(){
 		}
 	}
 	rs.setNbNp(val);
+}
+
+void Simulation::robot_bouge(){
+	
+	for (auto& robot_rep : robots_rep){
+		robot_rep.move_rep_to();
+	}
 }

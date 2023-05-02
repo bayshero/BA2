@@ -54,6 +54,8 @@ public :
 	void lance_simulation();
 	void desintegration_particules();
 	
+	void robot_bouge();
+	
 private :
 
 	bool bool_error; //false si il y a une erreur détectée dans la simulation

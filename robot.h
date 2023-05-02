@@ -81,7 +81,7 @@ public:
 
 class R_reparateur : public Robot {
 private :
-
+	S2d goal;
 public :
 	R_reparateur(Circle c);
 	bool superposition_r_reparateur(const R_reparateur& r) const;
@@ -89,6 +89,7 @@ public :
 	
 	std::string get_as_string();
 	void draw_robot_rep();
+	void move_rep_to();
 };
 
 #endif	
