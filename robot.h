@@ -9,6 +9,9 @@
 #define ROBOT_H
 #include "particule.h"
 #include "shape.h"
+#include <vector>
+
+typedef double Orient;       // en rd
 
 class Robot{
 protected :
@@ -65,10 +68,17 @@ private:
 	int k_update;
 	bool panne;
 	int c_n;
+	S2d goal;
+	bool bool_goal;
 public:
 	R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_);
 	int getKupdate() const;
 	int getPanne() const;
+	S2d getGoal() const;
+	bool getBoolGoal() const;
+	
+	void setGoal(S2d newGoal);
+	void setBoolGoal(bool boolGoal);
 	
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;
@@ -76,6 +86,10 @@ public:
 	
 	std::string get_as_string();
 	void draw_robot_neutr();
+	
+	void move_neutr_to(const std::vector<Particule>& particules,
+					   const std::vector<R_neutraliseur>& robots_neutr, 
+					   const std::vector<R_reparateur>& robots_rep);
 
 };
 
@@ -89,7 +103,10 @@ public :
 	
 	std::string get_as_string();
 	void draw_robot_rep();
-	void move_rep_to();
+	void move_rep_to(const std::vector<Particule>& particules,
+					 const std::vector<R_neutraliseur>& robots_neutr, 
+					 const std::vector<R_reparateur>& robots_rep);
+	
 };
 
 #endif	

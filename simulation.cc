@@ -44,6 +44,7 @@ void Simulation::lecture(string file_name){
 			lire_ligne(ligne);
 		}
 		set_nbNp();
+		triParticule();
 	}else exit(EXIT_FAILURE);
 }
 
@@ -363,9 +364,59 @@ void Simulation::set_nbNp(){
 	rs.setNbNp(val);
 }
 
+void Simulation::robots_neutr_cible(){
+	
+	//pour chaque particule, trouver le robot neutraliseur le plus proche
+	//et lui donner cette particule comme but
+	for (const auto& particule : particules){
+		//cout<<"**************************"<<endl;
+		//cout <<particule.getSquare().centre.x<<" "<<particule.getSquare().centre.y<<endl;
+		double minDistance = 1000000;
+		R_neutraliseur* R_neutr_proche = nullptr;
+		
+		for (auto& robot_neutr : robots_neutr){
+			double part_x = particule.getSquare().centre.x;
+			double part_y = particule.getSquare().centre.y;
+			double robot_x = robot_neutr.getCircle().centre.x;
+			double robot_y = robot_neutr.getCircle().centre.y;
+			S2d vecteur_robot_part = {part_x - robot_x, part_y - robot_y};
+			double distance =  s2d_norm(vecteur_robot_part);
+			
+			if (distance< minDistance){
+				minDistance = distance;
+				R_neutr_proche = &robot_neutr;
+			}
+		}
+		R_neutr_proche->setGoal(particule.getSquare().centre);
+	}
+	
+}
+
+//tri le vector de particules par ordre décroissant de taille
+void Simulation::triParticule(){
+	for (unsigned int i(0); i< particules.size(); ++i){
+		unsigned int maxIndex = i;
+		for (unsigned int j = i+ 1; j < particules.size(); ++j){
+			if (particules[j].getLongueur() > particules[maxIndex].getLongueur()){
+				maxIndex = j;
+			}
+		}
+		if (maxIndex != i) {
+			std::swap(particules[i], particules[maxIndex]);
+		}
+	}
+}
+
 void Simulation::robot_bouge(){
 	
 	for (auto& robot_rep : robots_rep){
-		robot_rep.move_rep_to();
+		robot_rep.move_rep_to(particules,
+							   robots_neutr, 
+							   robots_rep);
+	}
+	for (auto& robot_neutr : robots_neutr){
+		robot_neutr.move_neutr_to(particules,
+							   robots_neutr, 
+							   robots_rep);
 	}
 }

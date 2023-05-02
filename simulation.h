@@ -54,6 +54,9 @@ public :
 	void lance_simulation();
 	void desintegration_particules();
 	
+	void robots_neutr_cible();
+	void triParticule();
+	
 	void robot_bouge();
 	
 private :
