@@ -11,6 +11,7 @@
 #include "robot.h"
 #include "particule.h"
 #include "constantes.h"
+#include <cmath>
 
 using namespace std;
 
@@ -37,10 +38,18 @@ R_spatial::R_spatial()
 	: Robot() {}
 
 R_reparateur::R_reparateur(Circle c)
-	: Robot(c) {}
+	: Robot(c), goal({0,0}), bool_goal(false) {}
 
 R_neutraliseur::R_neutraliseur(Circle c, double a, int k_update_, bool panne_,int c_n_)
-	: Robot(c), orientation(a), k_update(k_update_) , panne(panne_), c_n(c_n_) {}
+	: Robot(c), orientation(a), k_update(k_update_) , panne(panne_), c_n(c_n_) 
+	{
+		bool_goal = false;
+	}
+
+
+R_neutraliseur::R_neutraliseur(Circle c)
+	: Robot(c), orientation(0), k_update(0), panne(false), c_n(0), goal({0,0}), 
+	  bool_goal(false) {}
 
 
 Circle Robot::getCircle() const {
@@ -257,6 +266,79 @@ void R_spatial::delete_rs(){
 	error_domain=true;
 }
 
+void R_reparateur::move_rep_to(const std::vector<Particule>& particules,
+							   const std::vector<R_neutraliseur>& robots_neutr, 
+							   const std::vector<R_reparateur>& robots_rep)
+{
+
+	S2d pos_to_goal = {goal.x - cercle.centre.x, goal.y - cercle.centre.y} ;
+	double norm(s2d_norm(pos_to_goal));
+	S2d new_position;
+	if(norm <= (vtran_max*delta_t)){
+		new_position = goal;
+	}
+	else {
+		new_position = s2d_add_scaled_vector(cercle.centre, pos_to_goal,
+											 (vtran_max*delta_t)/norm);
+	}
+	Circle new_circle = {cercle.rayon, new_position};
+	
+	for (const auto& p : particules){
+		if (collision_cs(new_circle, p.getSquare())){
+			cout<<"aie"<<endl;
+			return;
+		}
+	}
+	for (const auto& r : robots_neutr){
+		if (collision_cc(new_circle, r.getCircle())){
+			cout<<"aie"<<endl;
+			return;
+		}
+	}
+	for (const auto& r : robots_rep){
+		if (this != &r && collision_cc(new_circle, r.getCircle())){
+			cout<<"aie"<<endl;
+			return;
+		}
+	}
+	cercle.centre = new_position; 
+}
+
+
+// se déplace selon son orientation courante avec limitation supplémentaire
+// puis s'oriente au plus de max_delta_rt en direction de updated_pos_to_goal
+
+void R_neutraliseur::move_neutr_to(const std::vector<Particule>& particules,
+								   const std::vector<R_neutraliseur>& robots_neutr, 
+								   std::vector<R_reparateur>& robots_rep)
+{
+
+	// mise à jour de la position avec un déplacement selon l'orientation courante
+	S2d init_pos_to_goal = {goal.x - cercle.centre.x, goal.y - cercle.centre.y};
+	S2d travel_dir = {cos(orientation), sin(orientation)}; //vecteur unitaire selon Xrobot
+	double proj_goal = s2d_prod_scal(init_pos_to_goal, travel_dir);
+
+    if(abs(proj_goal) > vtran_max*delta_t) {
+		proj_goal = ((proj_goal > 0) ? 1 : -1)*vtran_max*delta_t;
+    }
+	cercle.centre = s2d_add_scaled_vector(cercle.centre, travel_dir, proj_goal);
+	
+	// mise à jour de l'orientation
+	S2d updated_pos_to_goal;
+	updated_pos_to_goal.x = goal.x - cercle.centre.x;
+	updated_pos_to_goal.y = goal.y - cercle.centre.y;
+	Orient goal_a(atan2(updated_pos_to_goal.y,updated_pos_to_goal.x));
+	Orient delta_a(goal_a - orientation);
+	
+	if(abs(delta_a) <= vrot_max*delta_t){
+		orientation = goal_a ; 
+	}
+	else{
+		orientation += ((delta_a > 0) ?  1. : -1.)*vrot_max*delta_t ;
+	}
+	
+}
+
 S2d R_neutraliseur::getGoal() const{
 	return goal;
 }
@@ -274,4 +356,42 @@ void R_neutraliseur::setBoolGoal(bool boolGoal){
 	bool_goal = boolGoal;
 }
 
+S2d R_reparateur::getGoal() const{
+	return goal;
+}
 
+void R_reparateur::setBoolGoal(bool boolGoal){
+	bool_goal = boolGoal;
+}
+
+void R_reparateur::setGoal(S2d newGoal){
+	goal = newGoal;
+}
+
+bool R_reparateur::getBoolGoal() const{
+	return bool_goal;
+}
+
+double R_neutraliseur::getOrientation() const{
+	return orientation;
+}
+
+void R_spatial::setNbNr(int newNbNr){
+	nbNr = newNbNr;
+}
+
+void R_spatial::setNbRr(int newNbRr){
+	nbRr = newNbRr;
+}
+
+void R_spatial::setNbNs(int newNbNs){
+	nbNs = newNbNs;
+}
+
+void R_spatial::setNbRs(int newNbRs){
+	nbRs = newNbRs;
+}
+
+void R_spatial::setNbNd(int newNbNd){
+	nbNd = newNbNd;
+}

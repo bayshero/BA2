@@ -9,6 +9,9 @@
 #define ROBOT_H
 #include "particule.h"
 #include "shape.h"
+#include <vector>
+
+typedef double Orient;       // en rd
 
 class Robot{
 protected :
@@ -19,6 +22,8 @@ public:
 	Circle getCircle() const;
 	bool superposition_r_neutre_rep(const Robot& r) const;
 };
+
+class R_reparateur;
 
 class R_spatial: public Robot {
 private :
@@ -52,6 +57,12 @@ public :
 	
 	void setNbUpdate(int newNbUpdate);
 	void setNbNp(int newNbNp);
+	void setNbNr(int newNbNr);
+	void setNbRr(int newNbRr);
+	void setNbNs(int newNbNs);
+	void setNbRs(int newNbRs);
+	void setNbNd(int newNbNd);
+	
 	
 	void delete_rs();
 	
@@ -69,10 +80,15 @@ private:
 	bool bool_goal;
 public:
 	R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_);
+	R_neutraliseur(Circle c);
 	int getKupdate() const;
 	int getPanne() const;
 	S2d getGoal() const;
 	bool getBoolGoal() const;
+	double getOrientation() const;
+	
+	void setGoal(S2d newGoal);
+	void setBoolGoal(bool boolGoal);
 	
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;
@@ -81,14 +97,16 @@ public:
 	std::string get_as_string();
 	void draw_robot_neutr();
 	
-	void setGoal(S2d newGoal);
-	void setBoolGoal(bool boolGoal);
+	void move_neutr_to(const std::vector<Particule>& particules,
+					   const std::vector<R_neutraliseur>& robots_neutr,
+					   std::vector<R_reparateur>& robots_rep);
 
 };
 
 class R_reparateur : public Robot {
 private :
-
+	S2d goal;
+	bool bool_goal;
 public :
 	R_reparateur(Circle c);
 	bool superposition_r_reparateur(const R_reparateur& r) const;
@@ -96,9 +114,16 @@ public :
 	
 	std::string get_as_string();
 	void draw_robot_rep();
+	void move_rep_to(const std::vector<Particule>& particules,
+					 const std::vector<R_neutraliseur>& robots_neutr, 
+					 const std::vector<R_reparateur>& robots_rep);
+					 
+	S2d getGoal() const;
+	bool getBoolGoal() const;
+	
+	void setGoal(S2d newGoal);
+	void setBoolGoal(bool boolGoal);
 };
-
-
 
 #endif	
 		

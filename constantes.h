@@ -1,8 +1,8 @@
 /*!
-  \file   constantes.h
+  \file   graphic.h
   \author Charly Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \date   avril 2023
+  \version 2
 */
 
 #ifndef CONSTANTES_H
@@ -21,11 +21,10 @@ constexpr double r_neutraliseur(4.);
 constexpr double vtran_max(4.); // par seconde
 constexpr double vrot_max(0.125); // rd/s env. 7°/s
 constexpr double epsil_alignement(0.01); // rd env. 0.6°
-constexpr double desintegration_rate(0.4);
+constexpr double desintegration_rate(0.002);
 constexpr double risk_factor(3.);
 constexpr double d_particule_min(8*epsil_zero);
 constexpr unsigned max_update(600);
 constexpr unsigned modulo_update(100);
 constexpr unsigned taille_dessin(500);
-
 #endif
