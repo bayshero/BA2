@@ -10,6 +10,7 @@
 #include "particule.h"
 #include "shape.h"
 #include <vector>
+#include <memory>
 
 typedef double Orient;       // en rd
 
@@ -78,6 +79,12 @@ private:
 	int c_n;
 	S2d goal;
 	bool bool_goal;
+	bool in_collision_with_particle = false;
+    bool in_collision_with_neutr_robot = false;
+    bool in_collision_with_rep_robot = false;
+    int collisionParticleIndex;
+
+
 public:
 	R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_);
 	R_neutraliseur(Circle c);
@@ -85,10 +92,16 @@ public:
 	int getPanne() const;
 	S2d getGoal() const;
 	bool getBoolGoal() const;
-	double getOrientation() const;
+	Orient getOrientation() const;
 	
 	void setGoal(S2d newGoal);
 	void setBoolGoal(bool boolGoal);
+	
+	bool isInCollisionWithParticle() const { return in_collision_with_particle; }//CHANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    bool isInCollisionWithNeutrRobot() const { return in_collision_with_neutr_robot; }
+    bool isInCollisionWithRepRobot() const { return in_collision_with_rep_robot; }
+	int getCollisionParticleIndex() const { return collisionParticleIndex; }
+	void setCollisionParticleIndex(int newIndex) { collisionParticleIndex = newIndex;}
 	
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;
@@ -99,7 +112,11 @@ public:
 	
 	void move_neutr_to(const std::vector<Particule>& particules,
 					   const std::vector<R_neutraliseur>& robots_neutr,
-					   std::vector<R_reparateur>& robots_rep);
+					   const std::vector<R_reparateur>& robots_rep);
+					   
+	void move_neutr_to_type1(const std::vector<Particule>& particules,
+							 const std::vector<R_neutraliseur>& robots_neutr, 
+							 const std::vector<R_reparateur>& robots_rep);
 
 };
 
@@ -124,6 +141,9 @@ public :
 	void setGoal(S2d newGoal);
 	void setBoolGoal(bool boolGoal);
 };
+
+S2d s2d_scale(const S2d& v, double scalar);
+S2d s2d_subtract(const S2d& a, const S2d& b);
 
 #endif	
 		

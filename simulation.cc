@@ -323,7 +323,6 @@ void Simulation::desintegration_particules() {
 			new_particules.push_back(particule);
 		}
 	}
-
     // Remplace le vecteur original par le nouveau vecteur
     particules = new_particules;
 }
@@ -332,6 +331,7 @@ void Simulation::desintegration_particules() {
 void Simulation::lance_simulation() {
 	//desintegration des particules + tri du vector par ordre décroissant de taille
     desintegration_particules(); 
+    verifie_SiCibleExiste();
     triParticule();
     
     //update nombre de robots en panne + destruction si trop longtemps en panne
@@ -346,19 +346,27 @@ void Simulation::lance_simulation() {
     //mouvement robots
     robot_bouge();
     
-    
+    cout<<"***********************"<<endl;
+    cout<<"1 step"<<endl;
     for (auto& robot_neutr : robots_neutr){
 		//cout<<"booleen : "<<robot_neutr.getBoolGoal()<<endl;
 		cout<<"goal, x: "<<robot_neutr.getGoal().x<<" y : "<<robot_neutr.getGoal().y<<endl;
 	}
 	
 	/*
-	cout<<"***********************"<<endl;
 	for (auto& robot_rep : robots_rep){
 		cout<<"booleen : "<<robot_rep.getBoolGoal()<<endl;
 		cout<<"goal, x: "<<robot_rep.getGoal().x<<" y : "<<robot_rep.getGoal().y<<endl;
 	}
 	*/
+	
+	for (auto& particule : particules){
+		cout<<"particule, x: "<<particule.getSquare().centre.x<<" y : "<<particule.getSquare().centre.y<<endl;
+		cout<<"bool"<<particule.getDeja_ciblee()<<endl;
+	}
+	
+	detruire_particule();
+	robot_rentre_maison();
 }
 
 //dessine le monde courant
@@ -418,7 +426,7 @@ void Simulation::robots_neutr_cible(){
 					Orient angle_diff = angle_particule - angle_robot;
 					if (angle_diff > M_PI) angle_diff -= 2 * M_PI; //normalise l'angle
 					if (angle_diff < -M_PI) angle_diff += 2 * M_PI;
-					double temps_rotation = abs(angle_diff) / vrot_max;
+										double temps_rotation = abs(angle_diff) / vrot_max;
 					double temps_translation = distance / vtran_max;
 					double temps_total = temps_rotation + temps_translation;
 					if (temps_total < temps_min){
@@ -526,7 +534,7 @@ void Simulation::robot_bouge(){
 	}
 	
 	for (auto& robot_neutr : robots_neutr){
-		robot_neutr.move_neutr_to(particules,
+		robot_neutr.move_neutr_to_type1(particules,
 							   robots_neutr, 
 							   robots_rep);
 	}   
@@ -535,13 +543,94 @@ void Simulation::robot_bouge(){
 
 void Simulation::panne_destroy(){
 	for (int i = robots_neutr.size() - 1; i >= 0; --i){
-		unsigned int update_courant(rs.getNbUpdate()-robots_neutr[i].getKupdate());
-		if ((update_courant)>= max_update){
-			robots_neutr.erase(robots_neutr.begin()+i);
-			rs.setNbNd(rs.getNbNd()+1);
-			rs.setNbNp(rs.getNbNp()-1);
-			rs.setNbNs(rs.getNbNs()-1);
+		if (robots_neutr[i].getPanne()){
+			unsigned int update_courant(rs.getNbUpdate()-robots_neutr[i].getKupdate());
+			if ((update_courant)>= max_update){
+				robots_neutr.erase(robots_neutr.begin()+i);
+				rs.setNbNd(rs.getNbNd()+1);
+				rs.setNbNp(rs.getNbNp()-1);
+				rs.setNbNs(rs.getNbNs()-1);
+			}
 		}
 	}
 }
 
+void Simulation::detruire_particule() {
+    // Iterate through all particles
+    
+    for (int i = particules.size() - 1; i >= 0; --i) {
+        // Check if a neutralizer robot is in collision with the current particle
+        for (auto& robot_neutr : robots_neutr) {
+            if (robot_neutr.isInCollisionWithParticle() and (robot_neutr.getCollisionParticleIndex() == i)) {
+                // Remove the particle from the vector
+                particules.erase(particules.begin() + i);
+                robot_neutr.setBoolGoal(false);
+                robot_neutr.setCollisionParticleIndex(-1);
+                // A particle has been destroyed, no need to check other robots for this particle
+                break;
+            }
+        }
+    }
+} 
+
+void Simulation::robot_rentre_maison(){
+	double rs_x = rs.getCircle().centre.x;
+	double rs_y = rs.getCircle().centre.y;
+	
+	//si un robot neutraliseur n'a plus de particules à exterminer,
+	//il rentre au robot spatial
+	for (int i = robots_neutr.size() - 1; i >= 0; --i){
+		if (!robots_neutr[i].getBoolGoal()){
+			robots_neutr[i].setGoal(rs.getCircle().centre);
+		}
+		double rn_goal_x = robots_neutr[i].getGoal().x;
+		double rn_goal_y = robots_neutr[i].getGoal().y;
+		Circle c1 = {0, robots_neutr[i].getCircle().centre};
+		if (collision_cc(c1, rs.getCircle())){
+			if ((rs_x == rn_goal_x) and (rs_y == rn_goal_y)) {
+				robots_neutr.erase(robots_neutr.begin()+i);
+				rs.setNbNr(rs.getNbNr()+1);
+				rs.setNbNs(rs.getNbNs()-1);
+			}
+		}
+	}
+	//si un robot reparateur n'a plus de robots neutraliseur à réparer,
+	//il rentre au robot spatial
+	for (int i = robots_rep.size() - 1; i >= 0; --i){
+		if (!robots_rep[i].getBoolGoal()){
+			robots_rep[i].setGoal(rs.getCircle().centre);
+		}
+		double rr_goal_x = robots_rep[i].getGoal().x;
+		double rr_goal_y = robots_rep[i].getGoal().y;
+		Circle c2 = {0, robots_rep[i].getCircle().centre};
+		if (collision_cc(c2, rs.getCircle())){
+			if ((rs_x == rr_goal_x) and (rs_y == rr_goal_y)) {
+				robots_rep.erase(robots_rep.begin()+i);
+				rs.setNbRr(rs.getNbRr()+1);
+				rs.setNbRs(rs.getNbRs()-1);
+			}
+		}
+	}
+}
+
+void Simulation::verifie_SiCibleExiste(){
+	for (auto& robot_neutr : robots_neutr){
+		bool boolExiste = false;
+		double rn_goal_x = robot_neutr.getGoal().x;
+		double rn_goal_y = robot_neutr.getGoal().y;
+		for (auto& particule : particules){
+			double p_x = particule.getSquare().centre.x;
+			double p_y = particule.getSquare().centre.y;
+			if ((rn_goal_x == p_x) and (rn_goal_y == p_y)){
+				boolExiste = true;
+			}
+		}
+		if (!boolExiste){
+			robot_neutr.setBoolGoal(false);
+		}
+	}
+}
+
+
+
+      
