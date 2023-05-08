@@ -1,8 +1,8 @@
 /*!
   \file   simulation.h
-  \author Charly Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly Guardia 60%, Gauthier de Mercey 40%
+  \date   avril 2023
+  \version 2
 */
 
 #ifndef SIMULATION_H
@@ -19,11 +19,14 @@ using namespace std;
 
 class Simulation{
 public :
-	Simulation();
 
-	void lecture(const char* file_name);
+	Simulation();
+	
+	//lecture du fichier
+	void lecture(string file_name);
 	void lire_ligne(string ligne);
 	
+	//fonction pour vérifier les erreurs
 	void parcourir_p();
 	void parcourir_r_neutre();
 	void parcourir_r_rep();
@@ -35,26 +38,45 @@ public :
 	void error_check();
 	void fin_succes();
 	
-	vector<Particule> GetParticules() const;
-	R_spatial GetRs() const;
+	//fonctions getters
+	vector<Particule> getParticules() const;
+	R_spatial getRs() const;
 	bool getError_simu() const;
-
+	
+	void delete_simu();
 	void save(string save_filename);
 	
+	//fonctions setters
 	void setRsNbUpdate(int newNbUpdate);
+	void set_nbNp();
+	
 	//simulation
 	void lance_simulation();
 	void desintegration_particules();
+	void creation_robots();
+	
+	void robots_neutr_cible();
+	void robots_rep_cible();
+	void triParticule();
+	
+	void robot_bouge();
+	void panne_destroy();
+	
+	void draw_world();
+	
+	//desintegrer particule
+	void detruire_particule();
+	
+private :
+
+	bool bool_error; //false si il y a une erreur détectée dans la simulation
 	static vector<Particule> particules;
 	static vector<R_neutraliseur> robots_neutr;
 	static vector<R_reparateur> robots_rep;
 	static R_spatial rs;
-private :	
-	bool bool_error; //false si il y a une erreur détectée dans la simulation
-	default_random_engine e;
 };
 
-void draw_world();
+
 
 #endif
 

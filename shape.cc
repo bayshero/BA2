@@ -1,8 +1,8 @@
 /*!
   \file   shape.cc
-  \author Charly  Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly  Guardia 70%, Gauthier de Mercey 30%
+  \date   avril 2023
+  \version 2
 */
 
 #include "shape.h"
@@ -74,22 +74,45 @@ bool collision_cs(Circle c2, Square s1, bool use_epsil){
 	return collision;
 }
 
-void draw_circle_rep(Circle c) {
-    draw_circle_rep_border(c.rayon, c.centre.x, c.centre.y);
+//dessine un robot spatial
+void draw_circle_spatial(const Circle& c) {
+	draw_circle(c.rayon, c.centre.x, c.centre.y, 4);
+	draw_dot(c.centre.x, c.centre.y);
 }
 
-void draw_circle_neutr(Circle c) {
-    draw_circle_neutr_border(c.rayon, c.centre.x, c.centre.y);
+//dessine un robot neutraliseur
+void draw_circle_neutr(const Circle& c, double orientation) {
+	draw_circle(c.rayon, c.centre.x, c.centre.y, 1);
+	draw_dot(c.centre.x, c.centre.y);
+	draw_line(c.rayon, c.centre.x, c.centre.y, orientation);
 }
 
-void draw_circle_spatial(Circle c) {
-    draw_circle_spatial_border(c.rayon, c.centre.x, c.centre.y);
+//dessine un robot réparateur
+void draw_circle_rep(const Circle& c) {
+	fill_circle(c.rayon, c.centre.x, c.centre.y, 2);
+	draw_circle(c.rayon, c.centre.x, c.centre.y, 1);
 }
 
+//dessine une particule
+void draw_square(const Square& s) {
+	draw_filled_square(s.longueur_cote, s.centre.x, s.centre.y);
+}
 
+double s2d_norm(S2d pos)
+{
+	return sqrt(pos.x*pos.y + pos.x*pos.y);
+}
 
-void draw_square(Square s) {
-    draw_square_border(s.longueur_cote, s.centre.x, s.centre.y);
-    fill_square(s.longueur_cote, s.centre.x, s.centre.y);
+double s2d_prod_scal(S2d v1, S2d v2)
+{
+	return v1.x*v2.y + v1.x*v2.y;
+}
+
+S2d s2d_add_scaled_vector(S2d pos, const S2d& pos_to_goal, double scaling)
+{
+	pos.x = pos.x + scaling*pos_to_goal.x;
+	pos.y += scaling*pos_to_goal.y;
+	
+	return pos;
 }
 

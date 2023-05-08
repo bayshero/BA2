@@ -1,8 +1,8 @@
 /*!
   \file   shape.h
-  \author Charly  Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly  Guardia 70%, Gauthier de Mercey 30%
+  \date   avril 2023
+  \version 2
 */
 
 
@@ -33,12 +33,14 @@ bool collision_cc(Circle c1, Circle c2, bool use_epsil=true);
 bool collision_ss(Square c1, Square s2, bool use_epsil=true);
 bool collision_cs(Circle c2, Square s1, bool use_epsil=true);
 
+void draw_circle_rep(const Circle& c);
+void draw_circle_neutr(const Circle& c, double orientation);
+void draw_square(const Square& s);
+void draw_circle_spatial(const Circle& c);
 
-void draw_circle_rep(Circle c);
-void draw_circle_neutr(Circle c);
-void draw_square(Square s);
-void draw_circle_spatial(Circle c);
+S2d s2d_add_scaled_vector(S2d pos, const S2d& pos_to_goal, double scaling);
+double s2d_prod_scal(S2d v1, S2d v2);
+double s2d_norm(S2d pos);
 
 #endif
-
 

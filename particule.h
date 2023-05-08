@@ -1,8 +1,8 @@
 /*!
   \file   particule.h
-  \author Charly Guardia et Gauthier de Mercey
-  \date   mars 2023
-  \version 1
+  \author Charly Guardia 0%, Gauthier de Mercey 100%
+  \date   avril 2023
+  \version 2
 */
 
 #ifndef PARTICULES_H
@@ -13,20 +13,38 @@ class Particule {
 private:
 	Square s;
 	bool error_initialisation;
+	bool deja_ciblee;
 public:
 Particule(Square s);  				//constructeur
 	
-	double GetLongueur() const;
-	Square GetSquare() const;
+	double getLongueur() const;
+	Square getSquare() const;
 	bool getError_initialisation() const;
+	
+	bool getDeja_ciblee() const;
+
+	void setDeja_ciblee(bool newDeja_ciblee);
 	
 	bool taille_min();
 	bool in_domaine();
 	void particule_error();
 	bool superposition_p(const Particule& p1) const;
 	std::string get_as_string();
+	
+	void draw_particule();
 };
+/*
+class ContaminatedZone {
+private:
+    Square zone;
+    const Particule& linked_particle;
 
-void draw_particule(const Particule& p);
+public:
+    ContaminatedZone(const Particule& particle, double risk_factor);
+
+    bool is_active() const;
+    void update();
+};
+*/
 
 #endif
