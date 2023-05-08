@@ -82,7 +82,7 @@ private:
 	bool in_collision_with_particle = false;
     bool in_collision_with_neutr_robot = false;
     bool in_collision_with_rep_robot = false;
-    size_t collisionParticleIndex;
+    int collisionParticleIndex;
 
 
 public:
@@ -100,7 +100,7 @@ public:
 	bool isInCollisionWithParticle() const { return in_collision_with_particle; }//CHANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     bool isInCollisionWithNeutrRobot() const { return in_collision_with_neutr_robot; }
     bool isInCollisionWithRepRobot() const { return in_collision_with_rep_robot; }
-	size_t getCollisionParticleIndex() const { return collisionParticleIndex; }
+	int getCollisionParticleIndex() const { return collisionParticleIndex; }
 	
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;

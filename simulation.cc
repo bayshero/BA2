@@ -548,10 +548,10 @@ void Simulation::panne_destroy(){
 
 void Simulation::detruire_particule() {
     // Iterate through all particles
-    for (size_t i = particules.size() - 1; i >= 0; --i) {
+    for (int i = particules.size() - 1; i >= 0; --i) {
         // Check if a neutralizer robot is in collision with the current particle
         for (const auto& robot_neutr : robots_neutr) {
-            if (robot_neutr.isInCollisionWithParticle() && robot_neutr.getCollisionParticleIndex() == i) {
+            if (robot_neutr.isInCollisionWithParticle() and (robot_neutr.getCollisionParticleIndex() == i)) {
                 // Remove the particle from the vector
                 particules.erase(particules.begin() + i);
 

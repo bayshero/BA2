@@ -47,6 +47,7 @@ protected:
 	void on_draw(const Cairo::RefPtr<Cairo::Context>& cr, const int width, const int height);
 private:
 	Frame frame;
+	Simulation simu;
 };
 
 
@@ -81,7 +82,7 @@ protected:
 	void maj_label(int nbUpdate_);
 	void update_infos();
 	
-	Simulation simu;
+	static Simulation simu;
 	std::string filename;
 	
 	bool on_timeout();
@@ -96,9 +97,6 @@ protected:
 	MyArea m_area;
 };
 
-
-
-//void draw_axes(const Cairo::RefPtr<Cairo::Context>& cr, Frame frame);
 
 #endif
 

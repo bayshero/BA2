@@ -10,6 +10,8 @@
 
 using namespace std;
 
+Simulation Gui::simu;
+
 //constructeur de la classe gui
 Gui::Gui(const std::string& filename):
 	big_box(Gtk::Orientation::HORIZONTAL,2), 
@@ -430,5 +432,6 @@ void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,
 	//initaialise monde
 	empty_world();
 	//dessine les objets, s'il y en a
-	draw_world();
+	simu.draw_world();
 }
+
