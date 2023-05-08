@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 #include "message.h"
+#include <algorithm>
 
 using namespace std;
 
@@ -26,7 +27,6 @@ vector<R_reparateur> Simulation::robots_rep;
 R_spatial Simulation::rs;
 
 static default_random_engine e;
-
 
 Simulation::Simulation(){}
 
@@ -44,7 +44,6 @@ void Simulation::lecture(string file_name){
 			lire_ligne(ligne);
 		}
 		set_nbNp();
-		triParticule();
 	}else exit(EXIT_FAILURE);
 }
 
@@ -62,7 +61,6 @@ void Simulation::lire_ligne(string ligne){
 		case NBP_:
 			if(!(data>>nbP)) exit(EXIT_FAILURE);
 			else{
-				section= PARTICULE;
 				if (nbP==0){
 					section = R_SPAT;
 				} else {
@@ -330,28 +328,30 @@ void Simulation::desintegration_particules() {
     particules = new_particules;
 }
 
+//appel des fonctions en charge de lancer la simulation
 void Simulation::lance_simulation() {
-	//appel des fonctions en charge de lancer la simulation
-	cout<<"*****************************on lance 1 fois*************************"<<endl;
+	//desintegration des particules + tri du vector par ordre décroissant de taille
     desintegration_particules(); 
     triParticule();
-
+    
     //update nombre de robots en panne + destruction si trop longtemps en panne
     set_nbNp();
-    panne_destroy();
-
+    //panne_destroy();
+    
     //robot spatial prend des décisions
     creation_robots();
     robots_rep_cible();
     robots_neutr_cible();
+    
+    //mouvement robots
     robot_bouge();
-
-
+    
+    
     for (auto& robot_neutr : robots_neutr){
 		//cout<<"booleen : "<<robot_neutr.getBoolGoal()<<endl;
 		cout<<"goal, x: "<<robot_neutr.getGoal().x<<" y : "<<robot_neutr.getGoal().y<<endl;
 	}
-
+	
 	/*
 	cout<<"***********************"<<endl;
 	for (auto& robot_rep : robots_rep){
@@ -359,7 +359,8 @@ void Simulation::lance_simulation() {
 		cout<<"goal, x: "<<robot_rep.getGoal().x<<" y : "<<robot_rep.getGoal().y<<endl;
 	}
 	*/
-    detruire_particule();
+	detruire_particule();
+	robot_rentre_maison();
 }
 
 //dessine le monde courant
@@ -396,44 +397,9 @@ void Simulation::set_nbNp(){
 }
 
 
-//tri le vector de particules par ordre décroissant de taille
-
-
-void Simulation::robot_bouge(){
-	
-	for (auto& robot_rep : robots_rep){
-		robot_rep.move_rep_to(particules,
-							   robots_neutr, 
-							   robots_rep);
-	}
-	for (auto& robot_neutr : robots_neutr){
-		robot_neutr.move_neutr_to_type1(particules,
-							   robots_neutr, 
-							   robots_rep);
-	}
-	
-}
-
-void Simulation::detruire_particule() {
-    // Iterate through all particles
-    for (size_t i = 0; i < particules.size(); ++i) {
-        // Check if a neutralizer robot is in collision with the current particle
-        for (const auto& robot_neutr : robots_neutr) {
-            if (robot_neutr.isInCollisionWithParticle() && robot_neutr.getCollisionParticleIndex() == i) {
-                // Remove the particle from the vector
-                particules.erase(particules.begin() + i);
-
-                // Decrement the index so that the next iteration processes the correct particle
-                --i;
-
-                // A particle has been destroyed, no need to check other robots for this particle
-                break;
-            }
-        }
-    }
-}
-
 void Simulation::robots_neutr_cible(){
+	//pour chaque particule, trouver le robot neutraliseur le plus proche
+	//et lui donner cette particule comme but
 	for (auto& particule : particules){
 		if (!particule.getDeja_ciblee()) {
 			double part_x = particule.getSquare().centre.x;
@@ -470,10 +436,10 @@ void Simulation::robots_neutr_cible(){
 			}
 		} 
 	}
-}	
-
+}
 
 void Simulation::robots_rep_cible(){
+	
 	//pour chaque robot reparateur, trouver le robot neutraliseur en panne le plus 
 	//proche et lui donner cette particule comme but
 	for (const auto& robot_neutr : robots_neutr){
@@ -507,9 +473,9 @@ void Simulation::robots_rep_cible(){
 }
 
 void Simulation::creation_robots(){
-
+	
 	unsigned int nbRobot_panne(rs.getNbNp());
-
+	
 	//creation de robots lorsque compteur de mises a jour est multiple de modulo_update
 	if ((rs.getNbUpdate()%modulo_update)==0){
 		//on crée un robot neutr. s'il y a plus de particules que de neutraliseurs
@@ -537,6 +503,7 @@ void Simulation::creation_robots(){
 	}
 }
 
+
 //tri le vector de particules par ordre décroissant de taille
 void Simulation::triParticule(){
 	for (unsigned int i(0); i< particules.size(); ++i){
@@ -552,6 +519,22 @@ void Simulation::triParticule(){
 	}
 }
 
+void Simulation::robot_bouge(){
+	
+	for (auto& robot_rep : robots_rep){
+		robot_rep.move_rep_to(particules,
+							   robots_neutr, 
+							   robots_rep);
+	}
+	
+	for (auto& robot_neutr : robots_neutr){
+		robot_neutr.move_neutr_to_type1(particules,
+							   robots_neutr, 
+							   robots_rep);
+	}   
+	
+}
+
 void Simulation::panne_destroy(){
 	for (int i = robots_neutr.size() - 1; i >= 0; --i){
 		unsigned int update_courant(rs.getNbUpdate()-robots_neutr[i].getKupdate());
@@ -560,6 +543,33 @@ void Simulation::panne_destroy(){
 			rs.setNbNd(rs.getNbNd()+1);
 			rs.setNbNp(rs.getNbNp()-1);
 			rs.setNbNs(rs.getNbNs()-1);
+		}
+	}
+}
+
+void Simulation::detruire_particule() {
+    // Iterate through all particles
+    for (int i = particules.size() - 1; i >= 0; --i) {
+        // Check if a neutralizer robot is in collision with the current particle
+        for (auto& robot_neutr : robots_neutr) {
+            if (robot_neutr.isInCollisionWithParticle() && robot_neutr.getCollisionParticleIndex() == i) {
+                // Remove the particle from the vector
+                particules.erase(particules.begin() + i);
+				robot_neutr.setBoolGoal(false);
+                // Reset the index so that the next iteration processes the correct particle
+				robot_neutr.setCollisionParticleIndex(-1);
+
+                // A particle has been destroyed, no need to check other robots for this particle
+                break;
+            }
+        }
+    }
+}       
+
+void Simulation::robot_rentre_maison(){
+	for (auto& robot_neutr : robots_neutr){
+		if (!robot_neutr.getBoolGoal()){
+			robot_neutr.setGoal(rs.getCircle().centre);
 		}
 	}
 }

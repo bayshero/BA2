@@ -268,7 +268,7 @@ void R_reparateur::move_rep_to(const std::vector<Particule>& particules,
 							   const std::vector<R_neutraliseur>& robots_neutr, 
 							   const std::vector<R_reparateur>& robots_rep)
 {
-	//goal = {0,0}; //test ****probleme**** based on the position i give it for a goal, they dissapear
+
 	S2d pos_to_goal = {goal.x - cercle.centre.x, goal.y - cercle.centre.y} ;
 	double norm(s2d_norm(pos_to_goal));
 	S2d new_position;
@@ -395,7 +395,26 @@ void R_neutraliseur::move_neutr_to_type1(const std::vector<Particule>& particule
         }
         Circle new_circle = {cercle.rayon, new_position};
 
-                in_collision_with_particle = false;
+			for (size_t i = 0; i < particules.size(); ++i) {
+			if (collision_cs(cercle, particules[i].getSquare())) {
+				in_collision_with_particle = true;
+				collisionParticleIndex = i;
+
+				// Set a new goal for the robot as the center of the collided particle
+				goal = particules[i].getSquare().centre;
+	
+				// Update the orientation based on the new goal
+				updated_pos_to_goal.x = goal.x - cercle.centre.x;
+				updated_pos_to_goal.y = goal.y - cercle.centre.y;
+				goal_a = Orient(atan2(updated_pos_to_goal.y, updated_pos_to_goal.x));
+				delta_a = goal_a - orientation;
+
+				break;
+			}
+		}
+
+
+		in_collision_with_particle = false;
         for (size_t i = 0; i < particules.size(); ++i) {
             if (collision_cs(new_circle, particules[i].getSquare())) {
                 in_collision_with_particle = true;
@@ -414,10 +433,20 @@ void R_neutraliseur::move_neutr_to_type1(const std::vector<Particule>& particule
                 S2d adjustment = s2d_scale(direction_to_robot, overlapping_distance / distance_to_robot);
 
                 cercle.centre = s2d_subtract(new_circle.centre, adjustment);
+                
+                S2d direction_to_particle = {goal.x - cercle.centre.x, goal.y - cercle.centre.y};
+				double angle_to_particle = atan2(direction_to_particle.y, direction_to_particle.x);
+				double angle_delta = abs(orientation - angle_to_particle);
+
+				// Store the angle delta in the class member variable
+				angle_data_in_collision = angle_delta;
 
                 return;
             }
         }
+		
+		angle_data_in_collision = -1;
+        
 
         in_collision_with_neutr_robot = false;
         for (const auto& r : robots_neutr){
@@ -448,7 +477,6 @@ S2d s2d_subtract(const S2d& a, const S2d& b) {
     return {a.x - b.x, a.y - b.y};
 }
 
-
 S2d R_neutraliseur::getGoal() const{
 	return goal;
 }
@@ -466,10 +494,6 @@ void R_neutraliseur::setBoolGoal(bool boolGoal){
 	bool_goal = boolGoal;
 }
 
-Orient R_neutraliseur::getOrientation() const {
-    return orientation;
-}
-
 S2d R_reparateur::getGoal() const{
 	return goal;
 }
@@ -484,6 +508,10 @@ void R_reparateur::setGoal(S2d newGoal){
 
 bool R_reparateur::getBoolGoal() const{
 	return bool_goal;
+}
+
+Orient R_neutraliseur::getOrientation() const{
+	return orientation;
 }
 
 void R_spatial::setNbNr(int newNbNr){
@@ -505,3 +533,33 @@ void R_spatial::setNbRs(int newNbRs){
 void R_spatial::setNbNd(int newNbNd){
 	nbNd = newNbNd;
 }
+
+void R_neutraliseur::setCollisionParticleIndex(int index){
+	collisionParticleIndex = index;
+}
+
+void R_neutraliseur::setInCollisionWithParticle(bool state){
+	in_collision_with_particle = state;
+}
+
+        //************************POUR TUER PARTICULE OTW******************************
+        /*
+		if (in_collision_with_particle) {
+            S2d particle_center = {
+                particules[collisionParticleIndex].getSquare().centre.x,
+                particules[collisionParticleIndex].getSquare().centre.y
+            };
+            Orient target_orientation(atan2(particle_center.y - cercle.centre.y, particle_center.x - cercle.centre.x));
+            if (abs(orientation - target_orientation) > epsil_alignement) {
+                // Update the orientation towards the colliding particle
+                Orient delta_a_colliding(target_orientation - orientation);
+                if(abs(delta_a_colliding) <= vrot_max*delta_t){
+                    orientation = target_orientation;
+                }
+                else{
+                    orientation += ((delta_a_colliding > 0) ?  1. : -1.)*vrot_max*delta_t;
+                }
+                return;
+            }
+        }
+		*/

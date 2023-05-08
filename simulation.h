@@ -53,6 +53,7 @@ public :
 	//simulation
 	void lance_simulation();
 	void desintegration_particules();
+	void detruire_particule();
 	void creation_robots();
 	
 	void robots_neutr_cible();
@@ -61,22 +62,19 @@ public :
 	
 	void robot_bouge();
 	void panne_destroy();
+	void robot_rentre_maison();
 	
 	void draw_world();
 	
-	//desintegrer particule
-	void detruire_particule();
 	
 private :
-
-	bool bool_error; //false si il y a une erreur détectée dans la simulation
 	static vector<Particule> particules;
 	static vector<R_neutraliseur> robots_neutr;
 	static vector<R_reparateur> robots_rep;
 	static R_spatial rs;
+	bool bool_error; //false si il y a une erreur détectée dans la simulation
+
 };
-
-
 
 #endif
 

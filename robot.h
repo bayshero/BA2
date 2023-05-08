@@ -10,7 +10,6 @@
 #include "particule.h"
 #include "shape.h"
 #include <vector>
-#include <vector>
 #include <memory>
 
 typedef double Orient;       // en rd
@@ -65,6 +64,7 @@ public :
 	void setNbRs(int newNbRs);
 	void setNbNd(int newNbNd);
 	
+	
 	void delete_rs();
 	
 	void draw_robot_spatial();
@@ -73,7 +73,7 @@ public :
 
 class R_neutraliseur : public Robot {
 private:
-	Orient orientation;		//angle entre (-pi et pi)
+	double orientation;		//angle entre (-pi et pi)
 	int k_update;
 	bool panne;
 	int c_n;
@@ -82,7 +82,8 @@ private:
 	bool in_collision_with_particle = false;
     bool in_collision_with_neutr_robot = false;
     bool in_collision_with_rep_robot = false;
-    size_t collisionParticleIndex;
+    int collisionParticleIndex;
+    double angle_data_in_collision;
 
 
 public:
@@ -96,11 +97,15 @@ public:
 	
 	void setGoal(S2d newGoal);
 	void setBoolGoal(bool boolGoal);
+	void setCollisionParticleIndex(int index);
+	void setInCollisionWithParticle(bool state);
 	
 	bool isInCollisionWithParticle() const { return in_collision_with_particle; }//CHANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     bool isInCollisionWithNeutrRobot() const { return in_collision_with_neutr_robot; }
     bool isInCollisionWithRepRobot() const { return in_collision_with_rep_robot; }
-	size_t getCollisionParticleIndex() const { return collisionParticleIndex; }
+	int getCollisionParticleIndex() const { return collisionParticleIndex; }
+	double getAngleDeltaInCollision() const {return angle_data_in_collision; }
+	
 	
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;
@@ -110,13 +115,13 @@ public:
 	void draw_robot_neutr();
 	
 	void move_neutr_to(const std::vector<Particule>& particules,
-					   const std::vector<R_neutraliseur>& robots_neutr, 
+					   const std::vector<R_neutraliseur>& robots_neutr,
 					   const std::vector<R_reparateur>& robots_rep);
+					   
 	void move_neutr_to_type1(const std::vector<Particule>& particules,
 							 const std::vector<R_neutraliseur>& robots_neutr, 
 							 const std::vector<R_reparateur>& robots_rep);
-							 
-	
+
 };
 
 class R_reparateur : public Robot {
@@ -133,9 +138,10 @@ public :
 	void move_rep_to(const std::vector<Particule>& particules,
 					 const std::vector<R_neutraliseur>& robots_neutr, 
 					 const std::vector<R_reparateur>& robots_rep);
+					 
 	S2d getGoal() const;
 	bool getBoolGoal() const;
-
+	
 	void setGoal(S2d newGoal);
 	void setBoolGoal(bool boolGoal);
 };
