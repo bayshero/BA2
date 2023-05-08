@@ -13,12 +13,16 @@ class Particule {
 private:
 	Square s;
 	bool error_initialisation;
+	bool deja_ciblee;
 public:
 Particule(Square s);  				//constructeur
 	
 	double getLongueur() const;
 	Square getSquare() const;
 	bool getError_initialisation() const;
+	bool getDeja_ciblee() const;
+	
+	void setDeja_ciblee(bool newDeja_ciblee);
 	
 	bool taille_min();
 	bool in_domaine();
@@ -28,5 +32,17 @@ Particule(Square s);  				//constructeur
 	
 	void draw_particule();
 };
+
+/*
+class ContaminatedZone {
+private:
+    Square zone;
+    const Particule& linked_particle;
+public:
+    ContaminatedZone(const Particule& particle, double risk_factor);
+    bool is_active() const;
+    void update();
+};
+*/
 
 #endif

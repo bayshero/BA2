@@ -13,7 +13,7 @@
 using namespace std;
 
 Particule::Particule(Square s)
-	: s(s){}
+	: s(s), deja_ciblee(false) {}
 	
 double Particule::getLongueur() const{
 	return s.longueur_cote;
@@ -94,3 +94,10 @@ void Particule::draw_particule(){
 	draw_square(s);
 }
 
+bool Particule::getDeja_ciblee() const{
+	return deja_ciblee;
+}
+
+void Particule::setDeja_ciblee(bool newDeja_ciblee){
+	deja_ciblee = newDeja_ciblee;
+}

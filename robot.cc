@@ -38,11 +38,17 @@ R_spatial::R_spatial()
 	: Robot() {}
 
 R_reparateur::R_reparateur(Circle c)
-	: Robot(c) {}
+	: Robot(c), goal({0,0}), bool_goal(false) {}
 
 R_neutraliseur::R_neutraliseur(Circle c, double a, int k_update_, bool panne_,int c_n_)
-	: Robot(c), orientation(a), k_update(k_update_) , panne(panne_), c_n(c_n_) {}
+	: Robot(c), orientation(a), k_update(k_update_) , panne(panne_), c_n(c_n_) 
+	{
+		bool_goal = false;
+	}
 
+R_neutraliseur::R_neutraliseur(Circle c)
+	: Robot(c), orientation(0), k_update(0), panne(false), c_n(0), goal({0,0}), 
+	  bool_goal(false) {}
 
 Circle Robot::getCircle() const {
     return cercle;
@@ -262,7 +268,7 @@ void R_reparateur::move_rep_to(const std::vector<Particule>& particules,
 							   const std::vector<R_neutraliseur>& robots_neutr, 
 							   const std::vector<R_reparateur>& robots_rep)
 {
-	goal = {-50,30}; //test 
+
 	S2d pos_to_goal = {goal.x - cercle.centre.x, goal.y - cercle.centre.y} ;
 	double norm(s2d_norm(pos_to_goal));
 	S2d new_position;
@@ -277,19 +283,16 @@ void R_reparateur::move_rep_to(const std::vector<Particule>& particules,
 	
 	for (const auto& p : particules){
 		if (collision_cs(new_circle, p.getSquare())){
-			cout<<"aie"<<endl;
 			return;
 		}
 	}
 	for (const auto& r : robots_neutr){
 		if (collision_cc(new_circle, r.getCircle())){
-			cout<<"aie"<<endl;
 			return;
 		}
 	}
 	for (const auto& r : robots_rep){
 		if (this != &r && collision_cc(new_circle, r.getCircle())){
-			cout<<"aie"<<endl;
 			return;
 		}
 	}
@@ -303,7 +306,10 @@ void R_neutraliseur::move_neutr_to(const std::vector<Particule>& particules,
 								   const std::vector<R_neutraliseur>& robots_neutr, 
 								   const std::vector<R_reparateur>& robots_rep)
 {
-	goal = {100, 100}; //test
+	//goal = {100, 100}; //test
+	
+	
+	
 	// mise à jour de la position avec un déplacement selon l'orientation courante
 	S2d init_pos_to_goal = {goal.x - cercle.centre.x, goal.y - cercle.centre.y};
 	S2d travel_dir = {cos(orientation), sin(orientation)}; //vecteur unitaire selon Xrobot
@@ -312,7 +318,28 @@ void R_neutraliseur::move_neutr_to(const std::vector<Particule>& particules,
     if(abs(proj_goal) > vtran_max*delta_t) {
 		proj_goal = ((proj_goal > 0) ? 1 : -1)*vtran_max*delta_t;
     }
-	s2d_add_scaled_vector(cercle.centre, travel_dir, proj_goal);
+
+    
+    S2d new_position = s2d_add_scaled_vector(cercle.centre, travel_dir, proj_goal);
+    Circle new_circle = {cercle.rayon, new_position};
+    
+    for (const auto& p : particules){
+		if (collision_cs(new_circle, p.getSquare())){
+			return;
+		}
+	}
+	for (const auto& r : robots_neutr){
+		if (this != &r && collision_cc(new_circle, r.getCircle())){
+			return;
+		}
+	}
+	for (const auto& r : robots_rep){
+		if (collision_cc(new_circle, r.getCircle())){
+			return;
+		}
+	}
+	
+	cercle.centre = new_position;
 	
 	// mise à jour de l'orientation
 	S2d updated_pos_to_goal;
@@ -327,6 +354,99 @@ void R_neutraliseur::move_neutr_to(const std::vector<Particule>& particules,
 	else{
 		orientation += ((delta_a > 0) ?  1. : -1.)*vrot_max*delta_t ;
 	}
+	
+}
+
+void R_neutraliseur::move_neutr_to_type1(const std::vector<Particule>& particules,
+                                         const std::vector<R_neutraliseur>& robots_neutr,
+                                         const std::vector<R_reparateur>& robots_rep){
+    //goal = {100,100}; //test
+    // mise à jour de l'orientation
+    S2d updated_pos_to_goal;
+    updated_pos_to_goal.x = goal.x - cercle.centre.x;
+    updated_pos_to_goal.y = goal.y - cercle.centre.y;
+    Orient goal_a(atan2(updated_pos_to_goal.y,updated_pos_to_goal.x));
+    Orient delta_a(goal_a - orientation);
+
+    bool orientation_correct = false;
+
+    if(abs(delta_a) <= vrot_max*delta_t){
+        orientation = goal_a ;
+    }
+    else{
+        orientation += ((delta_a > 0) ?  1. : -1.)*vrot_max*delta_t ;
+    }
+
+    if (abs(orientation - goal_a) <= epsil_alignement){
+        orientation_correct = true;
+    }
+
+    if (orientation_correct){
+        //translation
+        S2d pos_to_goal = {goal.x - cercle.centre.x, goal.y - cercle.centre.y} ;
+        double norm(s2d_norm(pos_to_goal));
+        S2d new_position;
+        if(norm <= (vtran_max*delta_t)){
+            new_position = goal;
+        }
+        else {
+            new_position = s2d_add_scaled_vector(cercle.centre, pos_to_goal,
+                                                 (vtran_max*delta_t)/norm);
+        }
+        Circle new_circle = {cercle.rayon, new_position};
+
+                in_collision_with_particle = false;
+        for (size_t i = 0; i < particules.size(); ++i) {
+            if (collision_cs(new_circle, particules[i].getSquare())) {
+                in_collision_with_particle = true;
+                collisionParticleIndex = i;
+
+                // Calculate the point of contact between the robot and the particle
+                S2d particle_center = {
+                    particules[i].getSquare().centre.x,
+                    particules[i].getSquare().centre.y
+                };
+                S2d direction_to_robot = {new_circle.centre.x - particle_center.x,
+                                          new_circle.centre.y - particle_center.y};
+                double distance_to_robot = s2d_norm(direction_to_robot);
+
+                double overlapping_distance = cercle.rayon + particules[i].getSquare().longueur_cote / 2.0 - distance_to_robot;
+                S2d adjustment = s2d_scale(direction_to_robot, overlapping_distance / distance_to_robot);
+
+                cercle.centre = s2d_subtract(new_circle.centre, adjustment);
+
+                return;
+            }
+        }
+        
+
+        in_collision_with_neutr_robot = false;
+        for (const auto& r : robots_neutr){
+            if (this != &r && collision_cc(new_circle, r.getCircle())){
+                in_collision_with_neutr_robot = true;
+                break;
+            }
+        }
+        if (in_collision_with_neutr_robot) return;
+
+        in_collision_with_rep_robot = false;
+        for (const auto& r : robots_rep){
+            if (collision_cc(new_circle, r.getCircle())){
+                in_collision_with_rep_robot = true;
+                break;
+            }
+        }
+        if (in_collision_with_rep_robot) return;
+        cercle.centre = new_position;
+    }
+}
+
+S2d s2d_scale(const S2d& v, double scalar) {
+    return {v.x * scalar, v.y * scalar};
+}
+
+S2d s2d_subtract(const S2d& a, const S2d& b) {
+    return {a.x - b.x, a.y - b.y};
 }
 
 S2d R_neutraliseur::getGoal() const{
@@ -344,4 +464,44 @@ bool R_neutraliseur::getBoolGoal() const{
 
 void R_neutraliseur::setBoolGoal(bool boolGoal){
 	bool_goal = boolGoal;
+}
+
+S2d R_reparateur::getGoal() const{
+	return goal;
+}
+
+void R_reparateur::setBoolGoal(bool boolGoal){
+	bool_goal = boolGoal;
+}
+
+void R_reparateur::setGoal(S2d newGoal){
+	goal = newGoal;
+}
+
+bool R_reparateur::getBoolGoal() const{
+	return bool_goal;
+}
+
+Orient R_neutraliseur::getOrientation() const{
+	return orientation;
+}
+
+void R_spatial::setNbNr(int newNbNr){
+	nbNr = newNbNr;
+}
+
+void R_spatial::setNbRr(int newNbRr){
+	nbRr = newNbRr;
+}
+
+void R_spatial::setNbNs(int newNbNs){
+	nbNs = newNbNs;
+}
+
+void R_spatial::setNbRs(int newNbRs){
+	nbRs = newNbRs;
+}
+
+void R_spatial::setNbNd(int newNbNd){
+	nbNd = newNbNd;
 }

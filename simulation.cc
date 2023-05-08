@@ -17,16 +17,16 @@
 #include <vector>
 #include <string>
 #include "message.h"
+#include <algorithm>
 
 using namespace std;
 
-static vector<Particule> particules;
-static vector<R_neutraliseur> robots_neutr;
-static vector<R_reparateur> robots_rep;
-static R_spatial rs;
+vector<Particule> Simulation::particules;
+vector<R_neutraliseur> Simulation::robots_neutr;
+vector<R_reparateur> Simulation::robots_rep;
+R_spatial Simulation::rs;
 
 static default_random_engine e;
-
 
 Simulation::Simulation(){}
 
@@ -44,7 +44,6 @@ void Simulation::lecture(string file_name){
 			lire_ligne(ligne);
 		}
 		set_nbNp();
-		triParticule();
 	}else exit(EXIT_FAILURE);
 }
 
@@ -62,7 +61,11 @@ void Simulation::lire_ligne(string ligne){
 		case NBP_:
 			if(!(data>>nbP)) exit(EXIT_FAILURE);
 			else{
-				section= PARTICULE;
+				if (nbP==0){
+					section = R_SPAT;
+				} else {
+					section= PARTICULE;
+				}
 				break;
 			}
 		case PARTICULE:
@@ -85,9 +88,9 @@ void Simulation::lire_ligne(string ligne){
 				c1 = {r_spatial,{x,y}};
 				R_spatial rs_(c1, nbUpdate, nbNr, nbNs, nbNd, nbRr, nbRs);
 				rs= rs_;
-				if ((nbNr+nbNs==0)and(nbRr+nbRs==0)){
+				if ((nbNs==0)and(nbRs==0)){
 					section = NBP_;
-				 } else if (nbRr+nbRs==0){
+				 } else if (nbRs==0){
 						section=R_NEUTR;
 						} else {
 							section = R_REP;
@@ -325,14 +328,42 @@ void Simulation::desintegration_particules() {
     particules = new_particules;
 }
 
+//appel des fonctions en charge de lancer la simulation
 void Simulation::lance_simulation() {
-	//appel des fonctions en charge de lancer la simulation
-    desintegration_particules();
+	//desintegration des particules + tri du vector par ordre décroissant de taille
+    desintegration_particules(); 
+    triParticule();
+    
+    //update nombre de robots en panne + destruction si trop longtemps en panne
+    set_nbNp();
+    panne_destroy();
+    
+    //robot spatial prend des décisions
+    creation_robots();
+    robots_rep_cible();
+    robots_neutr_cible();
+    
+    //mouvement robots
     robot_bouge();
+    
+    
+    for (auto& robot_neutr : robots_neutr){
+		//cout<<"booleen : "<<robot_neutr.getBoolGoal()<<endl;
+		cout<<"goal, x: "<<robot_neutr.getGoal().x<<" y : "<<robot_neutr.getGoal().y<<endl;
+	}
+	
+	/*
+	cout<<"***********************"<<endl;
+	for (auto& robot_rep : robots_rep){
+		cout<<"booleen : "<<robot_rep.getBoolGoal()<<endl;
+		cout<<"goal, x: "<<robot_rep.getGoal().x<<" y : "<<robot_rep.getGoal().y<<endl;
+	}
+	*/
+	detruire_particule();
 }
 
 //dessine le monde courant
-void draw_world(){
+void Simulation::draw_world(){
     for (unsigned int i(0); i<particules.size(); ++i){
         particules[i].draw_particule();
     }
@@ -364,33 +395,113 @@ void Simulation::set_nbNp(){
 	rs.setNbNp(val);
 }
 
+
 void Simulation::robots_neutr_cible(){
-	
 	//pour chaque particule, trouver le robot neutraliseur le plus proche
 	//et lui donner cette particule comme but
-	for (const auto& particule : particules){
-		//cout<<"**************************"<<endl;
-		//cout <<particule.getSquare().centre.x<<" "<<particule.getSquare().centre.y<<endl;
-		double minDistance = 1000000;
-		R_neutraliseur* R_neutr_proche = nullptr;
-		
-		for (auto& robot_neutr : robots_neutr){
+	for (auto& particule : particules){
+		if (!particule.getDeja_ciblee()) {
 			double part_x = particule.getSquare().centre.x;
 			double part_y = particule.getSquare().centre.y;
-			double robot_x = robot_neutr.getCircle().centre.x;
-			double robot_y = robot_neutr.getCircle().centre.y;
-			S2d vecteur_robot_part = {part_x - robot_x, part_y - robot_y};
-			double distance =  s2d_norm(vecteur_robot_part);
-			
-			if (distance< minDistance){
-				minDistance = distance;
-				R_neutr_proche = &robot_neutr;
+			double temps_min = 1000000;
+			int minDistanceIndex = -1;
+			for (unsigned int i(0); i<robots_neutr.size();++i){
+				if (!robots_neutr[i].getBoolGoal()){
+					//calcul de la distance séparant particule-robot
+					double robot_x = robots_neutr[i].getCircle().centre.x;
+					double robot_y = robots_neutr[i].getCircle().centre.y;
+					S2d vecteur_robot_part = {part_x - robot_x, part_y - robot_y};
+					double distance =  s2d_norm(vecteur_robot_part);
+					//calcul de l'écart angulaire
+					Orient angle_robot = robots_neutr[i].getOrientation();
+					Orient angle_particule = atan2(vecteur_robot_part.y,
+							  vecteur_robot_part.x);
+					Orient angle_diff = angle_particule - angle_robot;
+					if (angle_diff > M_PI) angle_diff -= 2 * M_PI; //normalise l'angle
+					if (angle_diff < -M_PI) angle_diff += 2 * M_PI;
+					double temps_rotation = abs(angle_diff) / vrot_max;
+					double temps_translation = distance / vtran_max;
+					double temps_total = temps_rotation + temps_translation;
+					if (temps_total < temps_min){
+						temps_min = temps_total;
+						minDistanceIndex = i;
+					}
+				}
+			}
+			if (minDistanceIndex !=-1){
+				robots_neutr[minDistanceIndex].setGoal(particule.getSquare().centre);
+				robots_neutr[minDistanceIndex].setBoolGoal(true);
+				particule.setDeja_ciblee(true);
+			}
+		} 
+	}
+}
+
+void Simulation::robots_rep_cible(){
+	
+	//pour chaque robot reparateur, trouver le robot neutraliseur en panne le plus 
+	//proche et lui donner cette particule comme but
+	for (const auto& robot_neutr : robots_neutr){
+		if (robot_neutr.getPanne()){
+			double robot__neutr_x = robot_neutr.getCircle().centre.x;
+			double robot_neutr_y = robot_neutr.getCircle().centre.y;
+			double minDistance = 10000;
+			int minDistanceIndex = -1;
+
+			for (unsigned int i(0); i<robots_rep.size();++i){
+				if (!robots_rep[i].getBoolGoal()){
+					double robot_rep_x = robots_rep[i].getCircle().centre.x;
+					double robot_rep_y = robots_rep[i].getCircle().centre.y;
+					S2d vecteur_robot_part = {robot_rep_x - robot__neutr_x, robot_rep_y
+											  - robot_neutr_y};
+					double distance =  s2d_norm(vecteur_robot_part);
+					if (distance < minDistance){
+						minDistance = distance;
+						minDistanceIndex = i;
+					}
+				}
+			}
+			//si première condition non remplie, le robot neutr. ne peut être sauvé
+			if ((minDistance > ((rs.getNbUpdate()-robot_neutr.getKupdate())*vtran_max))
+														  and(minDistanceIndex != -1)){
+				robots_rep[minDistanceIndex].setGoal(robot_neutr.getCircle().centre);
+				robots_rep[minDistanceIndex].setBoolGoal(true);
+			} 
+		}
+	}
+}
+
+void Simulation::creation_robots(){
+	
+	unsigned int nbRobot_panne(rs.getNbNp());
+	
+	//creation de robots lorsque compteur de mises a jour est multiple de modulo_update
+	if ((rs.getNbUpdate()%modulo_update)==0){
+		//on crée un robot neutr. s'il y a plus de particules que de neutraliseurs
+		if (particules.size() > robots_neutr.size()){
+			//IL DOIT AU MOINS Y AVOIR 1 ROBOT NEUTR PAR TYPE DE COORDINATION //A FAIRE
+			//il doit rester des robots neutr. en reserve pour en créer
+			if (rs.getNbNr() > 0){
+				Circle c1 = {r_neutraliseur,rs.getCircle().centre};
+				R_neutraliseur rn(c1);
+				robots_neutr.push_back(rn);
+				rs.setNbNr(rs.getNbNr()-1);
+				rs.setNbNs(rs.getNbNs()+1);
+			}
+			//on crée un robot rep. s'il y a plus de robots en panne que de robots rep
+		} else if ((nbRobot_panne) > robots_rep.size()){
+			//il doit rester des robots rep. en reserve pour en créer
+			if (rs.getNbRr() > 0) {
+				Circle c2 = {r_reparateur,rs.getCircle().centre};
+				R_reparateur rr(c2);
+				robots_rep.push_back(rr);
+				rs.setNbRr(rs.getNbRr()-1);
+				rs.setNbRs(rs.getNbRs()+1);
 			}
 		}
-		R_neutr_proche->setGoal(particule.getSquare().centre);
 	}
-	
 }
+
 
 //tri le vector de particules par ordre décroissant de taille
 void Simulation::triParticule(){
@@ -414,9 +525,42 @@ void Simulation::robot_bouge(){
 							   robots_neutr, 
 							   robots_rep);
 	}
+	
 	for (auto& robot_neutr : robots_neutr){
-		robot_neutr.move_neutr_to(particules,
+		robot_neutr.move_neutr_to_type1(particules,
 							   robots_neutr, 
 							   robots_rep);
+	}   
+	
+}
+
+void Simulation::panne_destroy(){
+	for (int i = robots_neutr.size() - 1; i >= 0; --i){
+		unsigned int update_courant(rs.getNbUpdate()-robots_neutr[i].getKupdate());
+		if ((update_courant)>= max_update){
+			robots_neutr.erase(robots_neutr.begin()+i);
+			rs.setNbNd(rs.getNbNd()+1);
+			rs.setNbNp(rs.getNbNp()-1);
+			rs.setNbNs(rs.getNbNs()-1);
+		}
 	}
 }
+
+void Simulation::detruire_particule() {
+    // Iterate through all particles
+    for (size_t i = particules.size() - 1; i >= 0; --i) {
+        // Check if a neutralizer robot is in collision with the current particle
+        for (const auto& robot_neutr : robots_neutr) {
+            if (robot_neutr.isInCollisionWithParticle() && robot_neutr.getCollisionParticleIndex() == i) {
+                // Remove the particle from the vector
+                particules.erase(particules.begin() + i);
+
+                // Decrement the index so that the next iteration processes the correct particle
+                --i;
+
+                // A particle has been destroyed, no need to check other robots for this particle
+                break;
+            }
+        }
+    }
+}       
