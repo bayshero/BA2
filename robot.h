@@ -83,7 +83,7 @@ private:
     bool in_collision_with_neutr_robot = false;
     bool in_collision_with_rep_robot = false;
     int collisionParticleIndex;
-
+	double angle_data_in_collision;
 
 public:
 	R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_);
@@ -96,11 +96,14 @@ public:
 	
 	void setGoal(S2d newGoal);
 	void setBoolGoal(bool boolGoal);
+	void setCollisionParticleIndex(int index);
+	void setInCollisionWithParticle(bool state);
 	
 	bool isInCollisionWithParticle() const { return in_collision_with_particle; }//CHANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     bool isInCollisionWithNeutrRobot() const { return in_collision_with_neutr_robot; }
     bool isInCollisionWithRepRobot() const { return in_collision_with_rep_robot; }
 	int getCollisionParticleIndex() const { return collisionParticleIndex; }
+	double getAngleDeltaInCollision() const {return angle_data_in_collision; }
 	
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;

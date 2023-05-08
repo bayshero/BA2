@@ -62,7 +62,8 @@ public :
 	
 	void robot_bouge();
 	void panne_destroy();
-	
+	void robot_rentre_maison();
+	void verifie_SiCibleExiste();
 	
 	void draw_world();
 	
