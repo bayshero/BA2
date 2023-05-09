@@ -28,6 +28,8 @@ struct Square{
 	double longueur_cote;
 };
 
+bool operator==(const S2d& lhs, const S2d& rhs);
+
 //use_epsil est vrai par défaut--> epsil zero est utilisé
 bool collision_cc(Circle c1, Circle c2, bool use_epsil=true);
 bool collision_ss(Square c1, Square s2, bool use_epsil=true);

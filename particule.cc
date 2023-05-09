@@ -101,3 +101,8 @@ bool Particule::getDeja_ciblee() const{
 void Particule::setDeja_ciblee(bool newDeja_ciblee){
 	deja_ciblee = newDeja_ciblee;
 }
+
+void Particule::resetDeja_ciblee() {
+    deja_ciblee = false;
+}
+

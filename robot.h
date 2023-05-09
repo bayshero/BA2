@@ -83,8 +83,7 @@ private:
     bool in_collision_with_neutr_robot = false;
     bool in_collision_with_rep_robot = false;
     int collisionParticleIndex;
-    double angle_data_in_collision;
-
+	double angle_data_in_collision;
 
 public:
 	R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_);
@@ -103,9 +102,10 @@ public:
 	bool isInCollisionWithParticle() const { return in_collision_with_particle; }//CHANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     bool isInCollisionWithNeutrRobot() const { return in_collision_with_neutr_robot; }
     bool isInCollisionWithRepRobot() const { return in_collision_with_rep_robot; }
-	int getCollisionParticleIndex() const { return collisionParticleIndex; }
+    bool isAlignedWithParticle(const S2d& particle_center) const;
+
+	int getCollisionParticleIndex() const { return collisionParticleIndex; }//VIRER
 	double getAngleDeltaInCollision() const {return angle_data_in_collision; }
-	
 	
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;
@@ -148,6 +148,8 @@ public :
 
 S2d s2d_scale(const S2d& v, double scalar);
 S2d s2d_subtract(const S2d& a, const S2d& b);
+
+Orient get_desired_orientation(const Circle& robot_circle, const Square& particle_square);
 
 #endif	
 		

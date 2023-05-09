@@ -100,7 +100,7 @@ void draw_square(const Square& s) {
 
 double s2d_norm(S2d pos)
 {
-	return sqrt(pos.x*pos.y + pos.x*pos.y);
+	return sqrt(pos.x*pos.x + pos.y*pos.y);
 }
 
 double s2d_prod_scal(S2d v1, S2d v2)
@@ -112,7 +112,9 @@ S2d s2d_add_scaled_vector(S2d pos, const S2d& pos_to_goal, double scaling)
 {
 	pos.x = pos.x + scaling*pos_to_goal.x;
 	pos.y += scaling*pos_to_goal.y;
-	
 	return pos;
 }
 
+bool operator==(const S2d& lhs, const S2d& rhs){
+    return (lhs.x == rhs.x) && (lhs.y == rhs.y);
+}
