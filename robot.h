@@ -84,6 +84,7 @@ private:
     bool in_collision_with_rep_robot = false;
     int collisionParticleIndex;
 	double angle_data_in_collision;
+	bool r_rep_en_chemin;
 
 public:
 	R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_);
@@ -93,17 +94,22 @@ public:
 	S2d getGoal() const;
 	bool getBoolGoal() const;
 	Orient getOrientation() const;
+	bool getRepEnChemin() const;
 	
 	void setGoal(S2d newGoal);
 	void setBoolGoal(bool boolGoal);
+	void setPanne(bool newPanne);
+	void setKupdate(int newKupdate);
 	void setCollisionParticleIndex(int index);
 	void setInCollisionWithParticle(bool state);
+	void setRepEnchemin(bool newRepEnChemin);
 	
 	bool isInCollisionWithParticle() const { return in_collision_with_particle; }//CHANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     bool isInCollisionWithNeutrRobot() const { return in_collision_with_neutr_robot; }
     bool isInCollisionWithRepRobot() const { return in_collision_with_rep_robot; }
 	int getCollisionParticleIndex() const { return collisionParticleIndex; }
 	double getAngleDeltaInCollision() const {return angle_data_in_collision; }
+	bool isAlignedWithParticle(const S2d& particle_center) const;
 	
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;
@@ -126,6 +132,7 @@ class R_reparateur : public Robot {
 private :
 	S2d goal;
 	bool bool_goal;
+	int panne_index;
 public :
 	R_reparateur(Circle c);
 	bool superposition_r_reparateur(const R_reparateur& r) const;
@@ -134,18 +141,22 @@ public :
 	std::string get_as_string();
 	void draw_robot_rep();
 	void move_rep_to(const std::vector<Particule>& particules,
-					 const std::vector<R_neutraliseur>& robots_neutr, 
+					 std::vector<R_neutraliseur>& robots_neutr, 
 					 const std::vector<R_reparateur>& robots_rep);
 					 
 	S2d getGoal() const;
 	bool getBoolGoal() const;
+	int getPanneIndex() const;
 	
 	void setGoal(S2d newGoal);
 	void setBoolGoal(bool boolGoal);
+	void setPanneIndex(int newIndex);
 };
 
 S2d s2d_scale(const S2d& v, double scalar);
 S2d s2d_subtract(const S2d& a, const S2d& b);
+
+Orient get_desired_orientation(const Circle& robot_circle, const Square& particle_square);
 
 #endif	
 		

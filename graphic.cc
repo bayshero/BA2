@@ -45,6 +45,12 @@ void set_color(int indice){
 	else if (indice == 5){ //gray
 		(*ptcr)->set_source_rgb(0.5, 0.5, 0.5);
 	}
+	else if (indice == 6){ //violet
+		(*ptcr)->set_source_rgb(0.5, 0, 0.5);
+	}
+	else if (indice == 7){ //orange
+		(*ptcr)->set_source_rgb(1, 0.45, 0);
+	}
 }	
 
 //dessine un carre rempli

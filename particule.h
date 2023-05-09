@@ -15,7 +15,7 @@ private:
 	bool error_initialisation;
 	bool deja_ciblee;
 public:
-Particule(Square s);  				//constructeur
+	Particule(Square s);  				//constructeur
 	
 	double getLongueur() const;
 	Square getSquare() const;
@@ -29,6 +29,7 @@ Particule(Square s);  				//constructeur
 	void particule_error();
 	bool superposition_p(const Particule& p1) const;
 	std::string get_as_string();
+	void resetDeja_ciblee();
 	
 	void draw_particule();
 };

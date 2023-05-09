@@ -22,7 +22,7 @@ double Particule::getLongueur() const{
 //vérifie que le coté d'une particule soit supérieur à d_particule_min
 bool Particule::taille_min(){
 	double taille = s.longueur_cote;
-	if(taille > d_particule_min){
+	if(taille >= d_particule_min){
 		return true;
 	}else{
 		return false;
@@ -100,4 +100,8 @@ bool Particule::getDeja_ciblee() const{
 
 void Particule::setDeja_ciblee(bool newDeja_ciblee){
 	deja_ciblee = newDeja_ciblee;
+}
+
+void Particule::resetDeja_ciblee() {
+    deja_ciblee = false;
 }
