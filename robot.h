@@ -123,8 +123,21 @@ public:
 					   const std::vector<R_reparateur>& robots_rep);
 					   
 	void type0(const std::vector<Particule>& particules,
-							 const std::vector<R_neutraliseur>& robots_neutr, 
-							 const std::vector<R_reparateur>& robots_rep);
+			   const std::vector<R_neutraliseur>& robots_neutr, 
+			   const std::vector<R_reparateur>& robots_rep);
+//	void type2(const std::vector<Particule>& particules,
+		//	   const std::vector<R_neutraliseur>& robots_neutr, 
+			  // const std::vector<R_reparateur>& robots_rep);
+			  
+	Orient update_orientation(const std::vector<Particule>& particules);
+	void normalize_angle(Orient& delta_a);
+	bool is_orientation_correct(const Orient& goal_a);
+	void translate_towards_goal(const std::vector<Particule>& particules,
+                                            const std::vector<R_neutraliseur>& robots_neutr,
+                                            const std::vector<R_reparateur>& robots_rep);
+	void update_collision_status(const Circle& new_circle, const std::vector<Particule>& particules,
+                                             const std::vector<R_neutraliseur>& robots_neutr,
+                                             const std::vector<R_reparateur>& robots_rep);
 
 };
 
