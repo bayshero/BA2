@@ -53,6 +53,7 @@ public :
 	//simulation
 	void lance_simulation();
 	void desintegration_particules();
+	void zone_a_risque_verifier(Particule& p);
 	bool detruire_particule();
 	void creation_robots();
 	
@@ -64,6 +65,8 @@ public :
 	void panne_destroy();
 	void robot_rentre_maison();
 	void verifie_SiCibleExiste();
+	bool verifie_si_spawn_vide();
+	void r_neutr_check();
 	bool is_particle_targeted(const S2d& particle_center);
 	
 	void draw_world();

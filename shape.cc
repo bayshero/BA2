@@ -56,18 +56,20 @@ bool collision_cs(Circle c2, Square s1, bool use_epsil){
 		if ((abs(c2.centre.x-s1.centre.x)<(s1.longueur_cote/2+c2.rayon+epsil_zero))and
 			(abs(c2.centre.y-s1.centre.y)<(s1.longueur_cote/2+c2.rayon+epsil_zero))){
 			collision = true;
-		}else if (((abs(c2.centre.x-s1.centre.x)>(s1.longueur_cote/2))
-					and(abs(c2.centre.y-s1.centre.y)>(s1.longueur_cote/2)))
-					and(l>(c2.rayon+epsil_zero))){
+		}
+		if (((abs(c2.centre.x-s1.centre.x)>(s1.longueur_cote/2))and
+			(abs(c2.centre.y-s1.centre.y)>(s1.longueur_cote/2)))
+								   and(l>(c2.rayon+epsil_zero))){
 			collision = false;
 		}
 	}else{
 		if ((abs(c2.centre.x-s1.centre.x)<(s1.longueur_cote/2+c2.rayon))
 			and(abs(c2.centre.y-s1.centre.y)<(s1.longueur_cote/2+c2.rayon))){
 			collision = true;
-		}else if (((abs(c2.centre.x-s1.centre.x)>(s1.longueur_cote/2))and
-					(abs(c2.centre.y-s1.centre.y)>(s1.longueur_cote/2)))
-					and(l>(c2.rayon))){
+		}
+		if (((abs(c2.centre.x-s1.centre.x)>(s1.longueur_cote/2))and
+			 (abs(c2.centre.y-s1.centre.y)>(s1.longueur_cote/2)))
+											  and(l>=(c2.rayon))){
 			collision = false;
 		}		
 	}
@@ -81,8 +83,8 @@ void draw_circle_spatial(const Circle& c) {
 }
 
 //dessine un robot neutraliseur
-void draw_circle_neutr(const Circle& c, double orientation) {
-	draw_circle(c.rayon, c.centre.x, c.centre.y, 1);
+void draw_circle_neutr(const Circle& c, double orientation, int color) {
+	draw_circle(c.rayon, c.centre.x, c.centre.y, color);
 	draw_dot(c.centre.x, c.centre.y);
 	draw_line(c.rayon, c.centre.x, c.centre.y, orientation);
 }
@@ -98,23 +100,54 @@ void draw_square(const Square& s) {
 	draw_filled_square(s.longueur_cote, s.centre.x, s.centre.y);
 }
 
-double s2d_norm(S2d pos)
-{
+double s2d_norm(S2d pos){
 	return sqrt(pos.x*pos.x + pos.y*pos.y);
 }
 
-double s2d_prod_scal(S2d v1, S2d v2)
-{
+double s2d_prod_scal(S2d v1, S2d v2{
 	return v1.x*v2.y + v1.x*v2.y;
 }
 
-S2d s2d_add_scaled_vector(S2d pos, const S2d& pos_to_goal, double scaling)
-{
+S2d s2d_add_scaled_vector(S2d pos, const S2d& pos_to_goal, double scaling){
 	pos.x = pos.x + scaling*pos_to_goal.x;
 	pos.y += scaling*pos_to_goal.y;
 	return pos;
 }
 
+bool intersects(const Square& square, const Circle& cercle){
+
+	double left = square.centre.x - (square.longueur_cote / 2);
+	double right = square.centre.x + (square.longueur_cote / 2);
+	double top = square.centre.y + (square.longueur_cote / 2);
+	double bottom = square.centre.y - (square.longueur_cote / 2);
+	
+	double closestX;
+	if (cercle.centre.x < left) {
+		closestX = left;
+	} else if (cercle.centre.x > right) {
+		closestX = right;
+	} else {
+		closestX = cercle.centre.x;
+	}
+
+	double closestY;
+	if (cercle.centre.y < bottom) {
+		closestY = bottom;
+	} else if (cercle.centre.y > top) {
+		closestY = top;
+	} else {
+		closestY = cercle.centre.y;
+	}
+	
+	double dx = cercle.centre.x - closestX;
+	double dy = cercle.centre.y - closestY;
+	double distance = sqrt(dx * dx + dy * dy);
+	
+	return distance <= cercle.rayon;
+}
+
 bool operator==(const S2d& lhs, const S2d& rhs){
     return (lhs.x == rhs.x) && (lhs.y == rhs.y);
 }
+
+

@@ -239,8 +239,16 @@ void R_reparateur::draw_robot_rep(){
 }
 
 //appelle la fonction de dessin du robot neutraliseur
-void R_neutraliseur::draw_robot_neutr(){
-    draw_circle_neutr(cercle, orientation);
+void R_neutraliseur::draw_robot_neutr()
+{
+	if (panne){
+		draw_circle_neutr(cercle, orientation,7);
+	} else if (in_collision_with_particle or in_collision_with_neutr_robot 
+								   or in_collision_with_rep_robot){
+		draw_circle_neutr(cercle, orientation,6);
+	} else {
+		draw_circle_neutr(cercle, orientation,1);
+	}
 }
 
 //appelle la fonction de dessin du robot spatial
@@ -265,7 +273,7 @@ void R_spatial::delete_rs(){
 }
 
 void R_reparateur::move_rep_to(const std::vector<Particule>& particules,
-							   const std::vector<R_neutraliseur>& robots_neutr, 
+							   std::vector<R_neutraliseur>& robots_neutr, 
 							   const std::vector<R_reparateur>& robots_rep)
 {
 
@@ -286,8 +294,15 @@ void R_reparateur::move_rep_to(const std::vector<Particule>& particules,
 			return;
 		}
 	}
-	for (const auto& r : robots_neutr){
+	for (auto& r : robots_neutr){
 		if (collision_cc(new_circle, r.getCircle())){
+			cout<<"hey"<<endl;
+			if (r.getPanne()){
+				bool_goal = false;
+				r.setPanne(false);
+				r.setRepEnchemin(false);
+				
+			}
 			return;
 		}
 	}
@@ -366,9 +381,12 @@ void R_neutraliseur::move_neutr_to_type1(const std::vector<Particule>& particule
     updated_pos_to_goal.y = goal.y - cercle.centre.y;
     Orient goal_a = Orient(atan2(updated_pos_to_goal.y, updated_pos_to_goal.x));
     Orient delta_a = goal_a - orientation;
+    if (delta_a > M_PI) delta_a -= 2 * M_PI; //normalise l'angle
+	if (delta_a < -M_PI) delta_a += 2 * M_PI;
 
     for (size_t i = 0; i < particules.size(); ++i) {
         if (collision_cs(cercle, particules[i].getSquare())) {
+			in_collision_with_particle = true;
             Orient desired_orientation = get_desired_orientation(cercle, particules[i].getSquare());
             goal_a = desired_orientation;
             delta_a = desired_orientation - orientation;
@@ -393,6 +411,9 @@ void R_neutraliseur::move_neutr_to_type1(const std::vector<Particule>& particule
 
 
 	if (orientation_correct){
+		in_collision_with_particle = false;
+    	in_collision_with_neutr_robot = false;
+    	in_collision_with_rep_robot = false;
     	// Translation towards the goal
     	S2d pos_to_goal = {goal.x - cercle.centre.x, goal.y - cercle.centre.y} ;
     	double norm(s2d_norm(pos_to_goal));
@@ -406,15 +427,12 @@ void R_neutraliseur::move_neutr_to_type1(const std::vector<Particule>& particule
     	}
     	Circle new_circle = {cercle.rayon, new_position};
 
-    	in_collision_with_particle = false;
-    	in_collision_with_neutr_robot = false;
-    	in_collision_with_rep_robot = false;
+
 
     	for (size_t i = 0; i < particules.size(); ++i) {
         	if (collision_cs(cercle, particules[i].getSquare())) {
             	in_collision_with_particle = true;
             	collisionParticleIndex = i;
-
             	// Alignment during collision
             	updated_pos_to_goal.x = goal.x - cercle.centre.x;
             	updated_pos_to_goal.y = goal.y - cercle.centre.y;
@@ -426,12 +444,6 @@ void R_neutraliseur::move_neutr_to_type1(const std::vector<Particule>& particule
     	}
 
     	if (!in_collision_with_particle) {
-        	for (size_t i = 0; i < particules.size(); ++i) {
-            	if (!in_collision_with_particle && collision_cs(new_circle, particules[i].getSquare())) {
-                	// Handle collisions with particles
-                	// ...
-            	}
-        	}
         	for (const auto& r : robots_neutr) {
             	if (this != &r && collision_cc(new_circle, r.getCircle())) {
                 	in_collision_with_neutr_robot = true;
@@ -527,27 +539,29 @@ void R_neutraliseur::setInCollisionWithParticle(bool state){
 	in_collision_with_particle = state;
 }
 
-        //************************POUR TUER PARTICULE OTW******************************
-        /*
-		if (in_collision_with_particle) {
-            S2d particle_center = {
-                particules[collisionParticleIndex].getSquare().centre.x,
-                particules[collisionParticleIndex].getSquare().centre.y
-            };
-            Orient target_orientation(atan2(particle_center.y - cercle.centre.y, particle_center.x - cercle.centre.x));
-            if (abs(orientation - target_orientation) > epsil_alignement) {
-                // Update the orientation towards the colliding particle
-                Orient delta_a_colliding(target_orientation - orientation);
-                if(abs(delta_a_colliding) <= vrot_max*delta_t){
-                    orientation = target_orientation;
-                }
-                else{
-                    orientation += ((delta_a_colliding > 0) ?  1. : -1.)*vrot_max*delta_t;
-                }
-                return;
-            }
-        }
-		*/
+void R_neutraliseur::setPanne(bool newPanne){
+	panne = newPanne;
+}
+
+void R_neutraliseur::setKupdate(int newKupdate){
+	k_update = newKupdate;
+}
+
+int R_reparateur::getPanneIndex() const{
+	return panne_index;
+}
+
+void R_reparateur::setPanneIndex(int newIndex){
+	panne_index = newIndex;
+}
+
+bool R_neutraliseur::getRepEnChemin() const{
+	return r_rep_en_chemin;
+}
+
+void R_neutraliseur::setRepEnchemin(bool newRepEnChemin){
+	r_rep_en_chemin = newRepEnChemin;
+}
 
 bool R_neutraliseur::isAlignedWithParticle(const S2d& particle_center) const {
     S2d position = cercle.centre;
@@ -614,14 +628,3 @@ Orient get_desired_orientation(const Circle& robot_circle, const Square& particl
         return Orient(M_PI / 2);
     }
 }
-
-
-
-
-
-
-
-
-	
-	
-

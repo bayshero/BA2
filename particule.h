@@ -15,7 +15,7 @@ private:
 	bool error_initialisation;
 	bool deja_ciblee;
 public:
-Particule(Square s);  				//constructeur
+	Particule(Square s);  				//constructeur
 	
 	double getLongueur() const;
 	Square getSquare() const;

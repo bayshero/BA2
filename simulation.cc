@@ -315,6 +315,7 @@ void Simulation::desintegration_particules() {
 				new_particules.push_back(Particule(s2));
 				new_particules.push_back(Particule(s3));
 				new_particules.push_back(Particule(s4));
+				zone_a_risque_verifier(particule);
 			} else {
 				// Ajoute la particule au nouveau vecteur (si pas de désintegration)
 				new_particules.push_back(particule);
@@ -332,6 +333,7 @@ void Simulation::lance_simulation() {
 	//desintegration des particules + tri du vector par ordre décroissant de taille
     desintegration_particules(); 
     verifie_SiCibleExiste();
+    r_neutr_check();
     triParticule();
     
     //update nombre de robots en panne + destruction si trop longtemps en panne
@@ -347,19 +349,20 @@ void Simulation::lance_simulation() {
     robot_bouge();
     
     cout<<"***********************"<<endl;
-    cout<<"1 step"<<endl;
+    cout<<"robot neutr://////////////////////"<<endl;
     for (auto& robot_neutr : robots_neutr){
-		//cout<<"booleen : "<<robot_neutr.getBoolGoal()<<endl;
+		cout<<"booleen panne: "<<robot_neutr.getPanne()<<endl;
+		cout<<"pos, x: "<<robot_neutr.getCircle().centre.x<<" y : "<<robot_neutr.getCircle().centre.y<<endl;
 		cout<<"goal, x: "<<robot_neutr.getGoal().x<<" y : "<<robot_neutr.getGoal().y<<endl;
 	}
 	
-	/*
+	cout<<"robot rep://////////////////"<<endl;
 	for (auto& robot_rep : robots_rep){
-		cout<<"booleen : "<<robot_rep.getBoolGoal()<<endl;
+		cout<<"robot rep booleen : "<<robot_rep.getBoolGoal()<<endl;
 		cout<<"goal, x: "<<robot_rep.getGoal().x<<" y : "<<robot_rep.getGoal().y<<endl;
 	}
-	*/
 	
+	cout<<"particules://////////////////"<<endl;
 	for (auto& particule : particules){
 		cout<<"particule, x: "<<particule.getSquare().centre.x<<" y : "<<particule.getSquare().centre.y<<endl;
 		cout<<"bool"<<particule.getDeja_ciblee()<<endl;
@@ -430,7 +433,7 @@ void Simulation::robots_neutr_cible(){
 					Orient angle_diff = angle_particule - angle_robot;
 					if (angle_diff > M_PI) angle_diff -= 2 * M_PI; //normalise l'angle
 					if (angle_diff < -M_PI) angle_diff += 2 * M_PI;
-										double temps_rotation = abs(angle_diff) / vrot_max;
+					double temps_rotation = abs(angle_diff) / vrot_max;
 					double temps_translation = distance / vtran_max;
 					double temps_total = temps_rotation + temps_translation;
 					if (temps_total < temps_min){
@@ -450,10 +453,11 @@ void Simulation::robots_neutr_cible(){
 
 void Simulation::robots_rep_cible(){
 	
+	int i(0);
 	//pour chaque robot reparateur, trouver le robot neutraliseur en panne le plus 
 	//proche et lui donner cette particule comme but
-	for (const auto& robot_neutr : robots_neutr){
-		if (robot_neutr.getPanne()){
+	for (auto& robot_neutr : robots_neutr){
+		if (robot_neutr.getPanne() and !robot_neutr.getRepEnChemin()){
 			double robot__neutr_x = robot_neutr.getCircle().centre.x;
 			double robot_neutr_y = robot_neutr.getCircle().centre.y;
 			double minDistance = 10000;
@@ -473,26 +477,36 @@ void Simulation::robots_rep_cible(){
 				}
 			}
 			//si première condition non remplie, le robot neutr. ne peut être sauvé
-			if ((minDistance > ((rs.getNbUpdate()-robot_neutr.getKupdate())*vtran_max))
-														  and(minDistanceIndex != -1)){
+			int update_courant = rs.getNbUpdate() - robot_neutr.getKupdate();
+			if (((minDistance < (max_update-update_courant)*vtran_max)) and 
+												 (minDistanceIndex != -1)){
 				robots_rep[minDistanceIndex].setGoal(robot_neutr.getCircle().centre);
 				robots_rep[minDistanceIndex].setBoolGoal(true);
+				//robots_rep[minDistanceIndex].setPanneIndex(i);
+				robot_neutr.setRepEnchemin(true);
 			} 
 		}
+		++i;
 	}
 }
 
 void Simulation::creation_robots(){
 	
-	unsigned int nbRobot_panne(rs.getNbNp());
+	if (!verifie_si_spawn_vide()){
+		//on ne crée aucun robot, si un robot neutraliseur se trouve au centre et
+		//est en train de s'orienter
+		cout<<"heyYOOOOOOOOOOOOOOOOO"<<endl;
+		return;
+	}
 	
+	unsigned int nbRobot_panne(rs.getNbNp());
 	//creation de robots lorsque compteur de mises a jour est multiple de modulo_update
 	if ((rs.getNbUpdate()%modulo_update)==0){
 		//on crée un robot neutr. s'il y a plus de particules que de neutraliseurs
-		if (particules.size() > robots_neutr.size()){
+		if (rs.getNbNr() > 0){
 			//IL DOIT AU MOINS Y AVOIR 1 ROBOT NEUTR PAR TYPE DE COORDINATION //A FAIRE
 			//il doit rester des robots neutr. en reserve pour en créer
-			if (rs.getNbNr() > 0){
+			if (particules.size() > robots_neutr.size()){
 				Circle c1 = {r_neutraliseur,rs.getCircle().centre};
 				R_neutraliseur rn(c1);
 				robots_neutr.push_back(rn);
@@ -538,11 +552,12 @@ void Simulation::robot_bouge(){
 	}
 	
 	for (auto& robot_neutr : robots_neutr){
-		robot_neutr.move_neutr_to_type1(particules,
-							   robots_neutr, 
-							   robots_rep);
+		if (!robot_neutr.getPanne()){
+			robot_neutr.move_neutr_to_type1(particules,
+											robots_neutr, 
+											robots_rep);
+		}
 	}   
-	
 }
 
 void Simulation::panne_destroy(){
@@ -568,10 +583,10 @@ bool Simulation::detruire_particule() {
                 // Check if the robot's orientation is aligned with the particle
                 Orient desired_orientation = get_desired_orientation(robot_neutr.getCircle(), particules[i].getSquare());
                 double angle_difference = std::abs(robot_neutr.getOrientation() - desired_orientation);
-
+                robot_neutr.setInCollisionWithParticle(false);
                 if (angle_difference < epsil_alignement) {
                     // Check if the destroyed particle is the original target
-                    if (particules[i].getSquare().centre == robot_neutr.getGoal()) {
+                    if (particules[i].getSquare().centre == robot_neutr.getGoal()) {//surcharge
                         target_destroyed = true;
                     }
 
@@ -596,10 +611,6 @@ bool Simulation::detruire_particule() {
 
     return target_destroyed;
 }
-
-
-
-
 
 
 void Simulation::robot_rentre_maison(){
@@ -642,7 +653,7 @@ void Simulation::robot_rentre_maison(){
 	}
 }
 
-void Simulation::verifie_SiCibleExiste(){ //qd particule se desintegre, robot neutr qui avait cette cible change de cible
+void Simulation::verifie_SiCibleExiste(){
 	for (auto& robot_neutr : robots_neutr){
 		bool boolExiste = false;
 		double rn_goal_x = robot_neutr.getGoal().x;
@@ -660,6 +671,62 @@ void Simulation::verifie_SiCibleExiste(){ //qd particule se desintegre, robot ne
 	}
 }
 
+void Simulation::r_neutr_check(){
+	//vérifie si le robot neutraliseur qu'un robot réparateur devait soigner est encore
+	//là, s'il n'existe plus (max update), reset boolGoal du robot réparateur.
+	//Cela arrive quand un robot réparateur n'arrive pas à temps au robot neutr. car
+	//il a été stoppé par un obstacle.
+	for (auto& robot_rep : robots_rep){
+		bool boolExiste = false;
+		double rr_goal_x = robot_rep.getGoal().x;
+		double rr_goal_y = robot_rep.getGoal().y;
+		for (auto& robot_neutr : robots_neutr){
+			double rn_x = robot_neutr.getCircle().centre.x;
+			double rn_y = robot_neutr.getCircle().centre.y;
+			if ((rr_goal_x == rn_x) and (rr_goal_y == rn_y)){
+				boolExiste = true;
+			}
+		}
+		if (!boolExiste){
+			robot_rep.setBoolGoal(false);
+		}
+	}
+}
+
+void Simulation::zone_a_risque_verifier(Particule& p){
+	double d_particule = p.getLongueur();
+	double d_zone = d_particule * risk_factor;
+	Square zone_a_risque = {p.getSquare().centre, d_zone};
+	
+	for (auto& robot_neutr : robots_neutr){
+		Circle c1 = robot_neutr.getCircle();
+		// Vérifie si une partie du cercle se trouve dans la zone à risque
+		if ((intersects(zone_a_risque, c1)) and (!robot_neutr.getPanne())){
+			//si c'est le cas, le robot tombe en panne et le robot mémorise
+			//nb_update dans sa variable k_update
+			robot_neutr.setPanne(true);
+			robot_neutr.setKupdate(rs.getNbUpdate());
+		}
+	}
+}
+
+bool Simulation::verifie_si_spawn_vide(){
+	Circle rs_c = rs.getCircle();
+	
+	for (auto& robot_neutr : robots_neutr){
+		if (collision_cc(rs_c, robot_neutr.getCircle())){
+			return false;
+		}
+	}
+	for (auto& robot_rep : robots_rep){
+		if (collision_cc(rs_c, robot_rep.getCircle())){
+			return false;
+		}
+	}
+	
+	return true;
+}
+
 bool Simulation::is_particle_targeted(const S2d& particle_center) {
     for (const auto& robot_neutr : robots_neutr) {
         if (robot_neutr.getBoolGoal() &&
@@ -670,6 +737,4 @@ bool Simulation::is_particle_targeted(const S2d& particle_center) {
     }
     return false;
 }
-
-
-      
+  
