@@ -553,9 +553,9 @@ void Simulation::robot_bouge(){
 	
 	for (auto& robot_neutr : robots_neutr){
 		if (!robot_neutr.getPanne()){
-			robot_neutr.move_neutr_to_type1(particules,
-											robots_neutr, 
-											robots_rep);
+			robot_neutr.type0(particules,
+							  robots_neutr, 
+							  robots_rep);
 		}
 	}   
 }

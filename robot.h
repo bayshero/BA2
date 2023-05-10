@@ -109,7 +109,7 @@ public:
     bool isInCollisionWithRepRobot() const { return in_collision_with_rep_robot; }
 	int getCollisionParticleIndex() const { return collisionParticleIndex; }
 	double getAngleDeltaInCollision() const {return angle_data_in_collision; }
-	bool isAlignedWithParticle(const S2d& particle_center) const;
+	//bool isAlignedWithParticle(const S2d& particle_center) const;
 	
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
 	bool superposition_p_r_neutraliseur(const Particule& r) const;
@@ -122,7 +122,7 @@ public:
 					   const std::vector<R_neutraliseur>& robots_neutr,
 					   const std::vector<R_reparateur>& robots_rep);
 					   
-	void move_neutr_to_type1(const std::vector<Particule>& particules,
+	void type0(const std::vector<Particule>& particules,
 							 const std::vector<R_neutraliseur>& robots_neutr, 
 							 const std::vector<R_reparateur>& robots_rep);
 

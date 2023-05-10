@@ -369,8 +369,31 @@ void R_neutraliseur::move_neutr_to(const std::vector<Particule>& particules,
 	}
 	
 }
+/*
+void R_neutraliseur::type0(const std::vector<Particule>& particules,
+                           const std::vector<R_neutraliseur>& robots_neutr,
+                           const std::vector<R_reparateur>& robots_rep){
 
-void R_neutraliseur::move_neutr_to_type1(const std::vector<Particule>& particules,
+	S2d updated_pos_to_goal;
+    updated_pos_to_goal.x = goal.x - cercle.centre.x;
+    updated_pos_to_goal.y = goal.y - cercle.centre.y;
+    Orient goal_a = Orient(atan2(updated_pos_to_goal.y, updated_pos_to_goal.x));
+    Orient delta_a = goal_a - orientation;
+    if (delta_a > M_PI) delta_a -= 2 * M_PI; //normalise l'angle
+	if (delta_a < -M_PI) delta_a += 2 * M_PI;
+	if(abs(delta_a) <= vrot_max*delta_t){
+		orientation = goal_a ; 
+	}
+	else{
+		orientation += ((delta_a > 0) ?  1. : -1.)*vrot_max*delta_t ;
+	}
+	if (abs(orientation - goal_a) <= epsil_alignement){
+    	orientation_correct = true;
+	}
+}
+*/
+
+void R_neutraliseur::type0(const std::vector<Particule>& particules,
                                          const std::vector<R_neutraliseur>& robots_neutr,
                                          const std::vector<R_reparateur>& robots_rep){
     //goal = {100,100}; //test
@@ -438,7 +461,7 @@ void R_neutraliseur::move_neutr_to_type1(const std::vector<Particule>& particule
             	updated_pos_to_goal.y = goal.y - cercle.centre.y;
             	goal_a = Orient(atan2(updated_pos_to_goal.y, updated_pos_to_goal.x));
             	delta_a = goal_a - orientation;
-
+            	
             	break;
         	}
     	}
@@ -562,7 +585,7 @@ bool R_neutraliseur::getRepEnChemin() const{
 void R_neutraliseur::setRepEnchemin(bool newRepEnChemin){
 	r_rep_en_chemin = newRepEnChemin;
 }
-
+/*
 bool R_neutraliseur::isAlignedWithParticle(const S2d& particle_center) const {
     S2d position = cercle.centre;
 
@@ -582,49 +605,47 @@ bool R_neutraliseur::isAlignedWithParticle(const S2d& particle_center) const {
         return angle_difference < epsil_alignement;
     }
 }
+*/
 
 Orient get_desired_orientation(const Circle& robot_circle, const Square& particle_square) {
+	S2d updated_pos_to_goal;
+	updated_pos_to_goal.x = particle_square.centre.x - robot_circle.centre.x;
+	updated_pos_to_goal.y = particle_square.centre.y - robot_circle.centre.y;
+
+	
     double left_boundary = particle_square.centre.x - particle_square.longueur_cote / 2;
     double right_boundary = particle_square.centre.x + particle_square.longueur_cote / 2;
-    double top_boundary = particle_square.centre.y - particle_square.longueur_cote / 2;
-    double bottom_boundary = particle_square.centre.y + particle_square.longueur_cote / 2;
+    double top_boundary = particle_square.centre.y + particle_square.longueur_cote / 2;
+    double bottom_boundary = particle_square.centre.y - particle_square.longueur_cote / 2;
 
-    double distance_left = abs(robot_circle.centre.x - left_boundary);
-    double distance_right = abs(robot_circle.centre.x - right_boundary);
-    double distance_top = abs(robot_circle.centre.y - top_boundary);
-    double distance_bottom = abs(robot_circle.centre.y - bottom_boundary);
+    // Check if the robot is in one of the corners
+    bool in_top_left_corner = robot_circle.centre.x < left_boundary && robot_circle.centre.y > top_boundary;
+    bool in_top_right_corner = robot_circle.centre.x > right_boundary && robot_circle.centre.y > top_boundary;
+    bool in_bottom_left_corner = robot_circle.centre.x < left_boundary && robot_circle.centre.y < bottom_boundary;
+    bool in_bottom_right_corner = robot_circle.centre.x > right_boundary && robot_circle.centre.y < bottom_boundary;
 
-    double min_distance = std::min(std::min(distance_left, distance_right), std::min(distance_top, distance_bottom));
+    if (in_top_left_corner || in_top_right_corner || in_bottom_left_corner || in_bottom_right_corner) {
+        return Orient(atan2(updated_pos_to_goal.y, updated_pos_to_goal.x));
+    }
 
-    double corner_threshold = std::min(robot_circle.rayon, particle_square.longueur_cote / 10);
+    bool on_left = robot_circle.centre.x <= left_boundary;
+    bool on_right = robot_circle.centre.x >= right_boundary;
+    bool on_top = robot_circle.centre.y <= top_boundary;
+    bool on_bottom = robot_circle.centre.y >= bottom_boundary;
 
-    if (min_distance == distance_left) {
-        if (abs(robot_circle.centre.y - top_boundary) < corner_threshold) {
-            return Orient(atan2(particle_square.centre.y - robot_circle.centre.y, particle_square.centre.x - robot_circle.centre.x));
-        } else if (abs(robot_circle.centre.y - bottom_boundary) < corner_threshold) {
-            return Orient(atan2(particle_square.centre.y - robot_circle.centre.y, particle_square.centre.x - robot_circle.centre.x));
-        }
+    if (on_left) {
         return Orient(0);
-    } else if (min_distance == distance_right) {
-        if (abs(robot_circle.centre.y - top_boundary) < corner_threshold) {
-            return Orient(atan2(particle_square.centre.y - robot_circle.centre.y, particle_square.centre.x - robot_circle.centre.x));
-        } else if (abs(robot_circle.centre.y - bottom_boundary) < corner_threshold) {
-            return Orient(atan2(particle_square.centre.y - robot_circle.centre.y, particle_square.centre.x - robot_circle.centre.x));
-        }
+    } else if (on_right) {
         return Orient(M_PI);
-    } else if (min_distance == distance_top) {
-        if (abs(robot_circle.centre.x - left_boundary) < corner_threshold) {
-            return Orient(atan2(particle_square.centre.y - robot_circle.centre.y, particle_square.centre.x - robot_circle.centre.x));
-        } else if (abs(robot_circle.centre.x - right_boundary) < corner_threshold) {
-            return Orient(atan2(particle_square.centre.y - robot_circle.centre.y, particle_square.centre.x - robot_circle.centre.x));
-        }
+    } else if (on_bottom) {
         return Orient(-M_PI / 2);
-    } else {
-        if (abs(robot_circle.centre.x - left_boundary) < corner_threshold) {
-            return Orient(atan2(particle_square.centre.y - robot_circle.centre.y, particle_square.centre.x - robot_circle.centre.x));
-        } else if (abs(robot_circle.centre.x - right_boundary) < corner_threshold) {
-            return Orient(atan2(particle_square.centre.y - robot_circle.centre.y, particle_square.centre.x - robot_circle.centre.x));
-        }
+    } else if (on_top) {
         return Orient(M_PI / 2);
     }
 }
+
+
+
+
+
+
