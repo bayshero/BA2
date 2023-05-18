@@ -34,7 +34,7 @@ void set_color(int indice){
 		(*ptcr)->set_source_rgb(0.0, 0.0, 0.0);
 	}
 	else if (indice == 2){ //green
-		(*ptcr)->set_source_rgb(0.0, 1.0, 0.0);		
+		(*ptcr)->set_source_rgb(0.0, 1.0, 0.0);
 	}
 	else if (indice == 3){ //red
 		(*ptcr)->set_source_rgb(1.0, 0.0, 0.0);

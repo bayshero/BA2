@@ -100,18 +100,15 @@ void draw_square(const Square& s) {
 	draw_filled_square(s.longueur_cote, s.centre.x, s.centre.y);
 }
 
-double s2d_norm(S2d pos)
-{
+double s2d_norm(S2d pos){
 	return sqrt(pos.x*pos.x + pos.y*pos.y);
 }
 
-double s2d_prod_scal(S2d v1, S2d v2)
-{
+double s2d_prod_scal(S2d v1, S2d v2){
 	return v1.x*v2.y + v1.x*v2.y;
 }
 
-S2d s2d_add_scaled_vector(S2d pos, const S2d& pos_to_goal, double scaling)
-{
+S2d s2d_add_scaled_vector(S2d pos, const S2d& pos_to_goal, double scaling){
 	pos.x = pos.x + scaling*pos_to_goal.x;
 	pos.y += scaling*pos_to_goal.y;
 	return pos;

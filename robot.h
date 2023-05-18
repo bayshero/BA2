@@ -70,7 +70,6 @@ public :
 	void draw_robot_spatial();
 };
 
-
 class R_neutraliseur : public Robot {
 private:
 	double orientation;		//angle entre (-pi et pi)
@@ -78,23 +77,35 @@ private:
 	bool panne;
 	int c_n;
 	S2d goal;
+	double d_zone_a_eviter;
 	bool bool_goal;
-	bool in_collision_with_particle = false;
-    bool in_collision_with_neutr_robot = false;
-    bool in_collision_with_rep_robot = false;
+	bool in_collision_with_particle;
+    bool in_collision_with_neutr_robot;
+    bool in_collision_with_rep_robot;
+    bool in_collision_with_zone;
+	bool collision_orientation;
     int collisionParticleIndex;
 	double angle_data_in_collision;
 	bool r_rep_en_chemin;
+	bool oriented;
+	bool oriented2;
+	bool rentre_maison;
+	Square part_cible;
 
 public:
 	R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_);
-	R_neutraliseur(Circle c);
+	R_neutraliseur(Circle c, int c_n);
 	int getKupdate() const;
 	int getPanne() const;
 	S2d getGoal() const;
 	bool getBoolGoal() const;
 	Orient getOrientation() const;
 	bool getRepEnChemin() const;
+	int getC_n() const;
+	int getGoalParticleIndex() const;
+	bool getOriented() const{return oriented;}
+	bool getOriented2() const{return oriented2;}
+	double getD_zone_a_eviter() const;
 	
 	void setGoal(S2d newGoal);
 	void setBoolGoal(bool boolGoal);
@@ -103,6 +114,14 @@ public:
 	void setCollisionParticleIndex(int index);
 	void setInCollisionWithParticle(bool state);
 	void setRepEnchemin(bool newRepEnChemin);
+	void setC_n(int newC_n);
+	void setGoalParticleIndex(int newGoalParticleIndex);
+	void setOriented(bool newOriented);
+	void setOriented2(bool newOriented2);
+	void setCollisionOrientation(bool newCollisionOrientation);
+	void setRentreMaison(bool newRentreMaison);
+	void setD_zone_a_eviter(double newD_zone_a_eviter);
+	void setParticuleCible(Square newParticuleCible);
 	
 	bool isInCollisionWithParticle() const { return in_collision_with_particle; }//CHANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     bool isInCollisionWithNeutrRobot() const { return in_collision_with_neutr_robot; }
@@ -121,11 +140,47 @@ public:
 	void move_neutr_to(const std::vector<Particule>& particules,
 					   const std::vector<R_neutraliseur>& robots_neutr,
 					   const std::vector<R_reparateur>& robots_rep);
-					   
-	void move_neutr_to_type1(const std::vector<Particule>& particules,
-							 const std::vector<R_neutraliseur>& robots_neutr, 
-							 const std::vector<R_reparateur>& robots_rep);
-
+	
+	void normalize_angle(Orient& delta_a);
+	
+	//type de coordination 0				   
+	void type0(const std::vector<Particule>& particules,
+			   const std::vector<R_neutraliseur>& robots_neutr, 
+			   const std::vector<R_reparateur>& robots_rep);
+						 
+	Orient update_orientation(const std::vector<Particule>& particules);
+	bool is_orientation_correct0(const Orient& goal_a);
+	
+	void update_collision_status0(const Circle& new_circle, const std::vector<Particule>& particules,
+                                 const std::vector<R_neutraliseur>& robots_neutr,
+                                 const std::vector<R_reparateur>& robots_rep);
+                                 
+	void translate_towards_goal0(const std::vector<Particule>& particules,
+                                 const std::vector<R_neutraliseur>& robots_neutr,
+                                 const std::vector<R_reparateur>& robots_rep);
+    //type de coordination 1                           
+    void type1(const std::vector<Particule>& particules,
+			   const std::vector<R_neutraliseur>& robots_neutr, 
+			   const std::vector<R_reparateur>& robots_rep);	
+	void update_collision_status1(const Circle& new_circle, const std::vector<Particule>& particules,
+                                  const std::vector<R_neutraliseur>& robots_neutr,
+                                  const std::vector<R_reparateur>& robots_rep);
+                                 					                              
+    bool is_orientation_correct1(const Orient& goal_a);      
+                          
+	void translate_towards_goal1(const std::vector<Particule>& particules,
+                                 const std::vector<R_neutraliseur>& robots_neutr,
+                                 const std::vector<R_reparateur>& robots_rep);
+                                 
+	//type de coordination 2
+	void type2(const std::vector<Particule>& particules,
+			   const std::vector<R_neutraliseur>& robots_neutr, 
+			   const std::vector<R_reparateur>& robots_rep);
+			   
+	void translate_towards_goal2(const std::vector<Particule>& particules,
+                                 const std::vector<R_neutraliseur>& robots_neutr,
+                                 const std::vector<R_reparateur>& robots_rep);
+	
 };
 
 class R_reparateur : public Robot {
