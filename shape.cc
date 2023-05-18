@@ -104,7 +104,7 @@ double s2d_norm(S2d pos){
 	return sqrt(pos.x*pos.x + pos.y*pos.y);
 }
 
-double s2d_prod_scal(S2d v1, S2d v2{
+double s2d_prod_scal(S2d v1, S2d v2){
 	return v1.x*v2.y + v1.x*v2.y;
 }
 
@@ -150,4 +150,10 @@ bool operator==(const S2d& lhs, const S2d& rhs){
     return (lhs.x == rhs.x) && (lhs.y == rhs.y);
 }
 
+S2d s2d_scale(const S2d& v, double scalar) {
+    return {v.x * scalar, v.y * scalar};
+}
 
+S2d s2d_subtract(const S2d& a, const S2d& b) {
+    return {a.x - b.x, a.y - b.y};
+}

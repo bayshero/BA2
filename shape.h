@@ -46,5 +46,8 @@ double s2d_norm(S2d pos);
 
 bool intersects(const Square& square, const Circle& cercle);
 
+S2d s2d_scale(const S2d& v, double scalar);
+S2d s2d_subtract(const S2d& a, const S2d& b);
+
 #endif
 
