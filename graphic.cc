@@ -1,8 +1,8 @@
 /*!
   \file   graphic.h
   \author Charly Guardia 0%, Gauthier de Mercey 100%
-  \date   avril 2023
-  \version 2
+  \date   mai 2023
+  \version 3
 */
 
 #include "graphic.h"
@@ -14,17 +14,17 @@ void graphic_set_context(const Cairo::RefPtr<Cairo::Context>& cr){
 	ptcr = &cr;
 }
 
-void empty_world() {
+void empty_world(double dmax_) {
 	(*ptcr)->set_source_rgb(1.0, 1.0, 1.0 );
 	(*ptcr)->paint();
 	(*ptcr)->set_line_width(1.0);
 	(*ptcr)->set_source_rgb(0.01, 0.01, 0.01);
 	//draw borders
-	(*ptcr)->move_to(-dmax, -dmax);
-	(*ptcr)->line_to(-dmax, dmax);
-	(*ptcr)->line_to(dmax, dmax);
-	(*ptcr)->line_to(dmax, -dmax);
-	(*ptcr)->line_to(-dmax, -dmax);
+	(*ptcr)->move_to(-dmax_, -dmax_);
+	(*ptcr)->line_to(-dmax_, dmax_);
+	(*ptcr)->line_to(dmax_, dmax_);
+	(*ptcr)->line_to(dmax_, -dmax_);
+	(*ptcr)->line_to(-dmax_, -dmax_);
 	(*ptcr)->stroke();
 }
 

@@ -1,8 +1,8 @@
 /*!
   \file   particule.cc
   \author Charly Guardia 15%, Gauthier de Mercey 85%
-  \date   avril 2023
-  \version 2
+  \date   mai 2023
+  \version 3
 */
 #include <iostream>
 #include "shape.h"
@@ -15,10 +15,6 @@ using namespace std;
 Particule::Particule(Square s)
 	: s(s), deja_ciblee(false) {}
 	
-double Particule::getLongueur() const{
-	return s.longueur_cote;
-}
-
 //vérifie que le coté d'une particule soit supérieur à d_particule_min
 bool Particule::taille_min(){
 	double taille = s.longueur_cote;
@@ -64,14 +60,6 @@ void Particule::particule_error(){
 	}
 }
 	
-Square Particule::getSquare() const {
-	return s;
-}
-
-bool Particule::getError_initialisation() const {
-	return error_initialisation;
-}
-
 //vérifie que deux particules ne se superposent pas
 bool Particule::superposition_p(const Particule& p1) const{
 	if (collision_ss(s, p1.s)) {
@@ -92,6 +80,18 @@ string Particule::get_as_string(){
 //appelle la fonction de dessin d'une particule
 void Particule::draw_particule(){
 	draw_square(s);
+}
+
+double Particule::getLongueur() const{
+	return s.longueur_cote;
+}
+
+Square Particule::getSquare() const {
+	return s;
+}
+
+bool Particule::getError_initialisation() const {
+	return error_initialisation;
 }
 
 bool Particule::getDeja_ciblee() const{

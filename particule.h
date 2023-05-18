@@ -1,8 +1,8 @@
 /*!
   \file   particule.h
   \author Charly Guardia 0%, Gauthier de Mercey 100%
-  \date   avril 2023
-  \version 2
+  \date   mai 2023
+  \version 3
 */
 
 #ifndef PARTICULES_H

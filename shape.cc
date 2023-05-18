@@ -1,8 +1,8 @@
 /*!
   \file   shape.cc
   \author Charly  Guardia 70%, Gauthier de Mercey 30%
-  \date   avril 2023
-  \version 2
+  \date   mai 2023
+  \version 3
 */
 
 #include "shape.h"
@@ -150,4 +150,10 @@ bool operator==(const S2d& lhs, const S2d& rhs){
     return (lhs.x == rhs.x) && (lhs.y == rhs.y);
 }
 
+S2d s2d_scale(const S2d& v, double scalar) {
+    return {v.x * scalar, v.y * scalar};
+}
 
+S2d s2d_subtract(const S2d& a, const S2d& b) {
+    return {a.x - b.x, a.y - b.y};
+}

@@ -1,9 +1,10 @@
 /*!
   \file   simulation.cc
-  \author Charly Guardia 60%, Gauthier de Mercey 40%
-  \date   avril 2023
-  \version 2
+  \author Charly Guardia 70%, Gauthier de Mercey 30%
+  \date   mai 2023
+  \version 3
 */
+
 
 #include "constantes.h"
 #include "simulation.h"
@@ -214,14 +215,6 @@ void Simulation::parcourir_p_rs() {
 	}
 }
 
-R_spatial Simulation::getRs() const{
-	return rs;
-}
-
-vector<Particule> Simulation::getParticules() const{
-	return particules;
-}
-
 //envoie "correct file" si aucune erreur detectee
 void Simulation::fin_succes(){
 	cout<<message::success();
@@ -278,14 +271,6 @@ void Simulation::save(string save_filename) {
 	}
 
     file.close();
-}
-
-void Simulation::setRsNbUpdate(int newNbUpdate) {
-    rs.setNbUpdate(newNbUpdate);
-}
-
-bool Simulation::getError_simu() const{
-	return bool_error;
 }
 
 void Simulation::desintegration_particules() {
@@ -347,33 +332,6 @@ void Simulation::lance_simulation() {
     
     //mouvement robots
     robot_bouge();
-    
-    cout<<"***********************"<<endl;
-    
-    
-    cout<<"robot neutr://////////////////////"<<endl;
-    for (auto& robot_neutr : robots_neutr){
-		//cout<<"booleen panne: "<<robot_neutr.getPanne()<<endl;
-		cout<<"pos, x: "<<robot_neutr.getCircle().centre.x<<" y : "<<robot_neutr.getCircle().centre.y<<endl;
-		cout<<"goal, x: "<<robot_neutr.getGoal().x<<" y : "<<robot_neutr.getGoal().y<<endl;
-		cout<<"orientation: "<<robot_neutr.getOrientation()<<endl;
-		cout<<"oriented1: "<<robot_neutr.getOriented()<<" | oriented2: "<<robot_neutr.getOriented2()<<endl;
-		cout<<"------------------------------"<<endl;
-	}
-	/*
-	cout<<"robot rep://////////////////"<<endl;
-	for (auto& robot_rep : robots_rep){
-		cout<<"robot rep booleen : "<<robot_rep.getBoolGoal()<<endl;
-		cout<<"goal, x: "<<robot_rep.getGoal().x<<" y : "<<robot_rep.getGoal().y<<endl;
-	}
-	*/
-	/*
-	cout<<"particules://////////////////"<<endl;
-	for (auto& particule : particules){
-		cout<<"particule, x: "<<particule.getSquare().centre.x<<" y : "<<particule.getSquare().centre.y<<endl;
-		cout<<"bool"<<particule.getDeja_ciblee()<<endl;
-	}
-	*/
 	
 	bool target_destroyed = detruire_particule();
 	robot_rentre_maison();
@@ -382,6 +340,8 @@ void Simulation::lance_simulation() {
 	if (!target_destroyed){
 		robots_neutr_cible();
 	}
+	
+	simulation_fin();
 }
 
 //dessine le monde courant
@@ -422,18 +382,18 @@ void Simulation::robots_neutr_cible(){
 	//pour chaque particule, trouver le robot neutraliseur le plus proche
 	//et lui donner cette particule comme but
 	for (unsigned int j(0); j<particules.size();++j){
+		Square s1 = particules[j].getSquare();
 		if (!particules[j].getDeja_ciblee()) {
-			double part_x = particules[j].getSquare().centre.x;
-			double part_y = particules[j].getSquare().centre.y;
-			Square part_forme = particules[j].getSquare();
+			S2d part = particules[j].getSquare().centre;
 			double temps_min = 1000000;
 			int minDistanceIndex = -1;
 			for (unsigned int i(0); i<robots_neutr.size();++i){
-				if (!robots_neutr[i].getBoolGoal() && !is_particle_targeted(particules[j].getSquare().centre)){
+				if (!robots_neutr[i].getBoolGoal() && 
+					!is_particle_targeted(s1.centre)){
 					//calcul de la distance séparant particule-robot
 					double robot_x = robots_neutr[i].getCircle().centre.x;
 					double robot_y = robots_neutr[i].getCircle().centre.y;
-					S2d vecteur_robot_part = {part_x - robot_x, part_y - robot_y};
+					S2d vecteur_robot_part = {part.x - robot_x, part.y - robot_y};
 					double distance =  s2d_norm(vecteur_robot_part);
 					//calcul de l'écart angulaire
 					Orient angle_robot = robots_neutr[i].getOrientation();
@@ -452,16 +412,21 @@ void Simulation::robots_neutr_cible(){
 				}
 			}
 			if (minDistanceIndex !=-1){
-				robots_neutr[minDistanceIndex].setGoal(particules[j].getSquare().centre);
-				robots_neutr[minDistanceIndex].setBoolGoal(true);
-				robots_neutr[minDistanceIndex].setOriented(false);
-				robots_neutr[minDistanceIndex].setOriented2(false);
-				robots_neutr[minDistanceIndex].setRentreMaison(false);
+				robot_neutr_set_stats(minDistanceIndex, s1);
 				particules[j].setDeja_ciblee(true);
-				robots_neutr[minDistanceIndex].setParticuleCible(part_forme);
 			}
 		}
 	}
+}
+
+void Simulation::robot_neutr_set_stats(int index, Square s1){
+	robots_neutr[index].setGoal(s1.centre);
+	robots_neutr[index].setBoolGoal(true);
+	robots_neutr[index].setOriented(false);
+	robots_neutr[index].setOriented2(false);
+	robots_neutr[index].setRentreMaison(false);
+	robots_neutr[index].setParticuleCible(s1);
+	
 }
 
 void Simulation::robots_rep_cible(){
@@ -510,7 +475,6 @@ void Simulation::creation_robots(){
 		//spatial
 		return;
 	}
-	
 	int i_n = rs.getNbNs() + rs.getNbNd();
 	unsigned int nbRobot_panne(rs.getNbNp());
 	//creation de robots lorsque compteur de mises a jour est multiple de modulo_update
@@ -601,21 +565,22 @@ void Simulation::panne_destroy(){
 	}
 }
 
+//fonction qui sert à détruire les particules si l'occasion se présente
 bool Simulation::detruire_particule() {
-	
     bool target_destroyed = false;
-
     for (int i = particules.size() - 1; i >= 0; --i) {
+		Square s1 = particules[i].getSquare();
         for (auto& robot_neutr : robots_neutr) {
-            if (robot_neutr.isInCollisionWithParticle() and (robot_neutr.getCollisionParticleIndex() == i)) {
+			Orient a = robot_neutr.getOrientation();
+            if (robot_neutr.isInCollisionWithParticle() and 
+			   (robot_neutr.getCollisionParticleIndex() == i)) {
                 //Verifie si le robot est bien aligné à la particule(bonne orientation)
-                Orient desired_orientation = get_desired_orientation(robot_neutr.getCircle(), particules[i].getSquare());
-                double angle_difference = std::abs(robot_neutr.getOrientation() - desired_orientation);
+                Orient desired_orientation = robot_neutr.get_desired_orientation(s1);
+                double angle_difference = std::abs(a - desired_orientation);
                 robot_neutr.setInCollisionWithParticle(false);
                 if (angle_difference < epsil_alignement) {
-                    // Vérifie si la particule détruite correspond à sa cible
-                    //originale
-                    if (particules[i].getSquare().centre == robot_neutr.getGoal()) {
+                    //Vérifie si la particule détruite correspond à sa cible originale
+                    if (s1.centre == robot_neutr.getGoal()) {
                         target_destroyed = true;
                     }
                     // Supprime la particule de son vector
@@ -631,15 +596,13 @@ bool Simulation::detruire_particule() {
         }
     }
 	//Si la particule cible n'est pas détruit, reset son attribut deja_ciblee
-	
     if (!target_destroyed) {
         for (auto& particule : particules) {
             if (particule.getDeja_ciblee()) {
                 particule.resetDeja_ciblee();
             }
         }
-    }
-    
+    }   
     return target_destroyed;
 }
 
@@ -685,6 +648,8 @@ void Simulation::robot_rentre_maison(){
 	}
 }
 
+//vérifie si une particule a été désintégrée, et change le bool goal à false dans le 
+//cas où sa particule cible à été désintégrée. Ainsi une autre cible lui sera attribuée
 void Simulation::verifie_SiCibleExiste(){
 	for (auto& robot_neutr : robots_neutr){
 		bool boolExiste = false;
@@ -756,7 +721,6 @@ bool Simulation::verifie_si_spawn_vide(){
 			return false;
 		}
 	}
-	
 	return true;
 }
 
@@ -771,5 +735,31 @@ bool Simulation::is_particle_targeted(const S2d& particle_center) {
     return false;
 }
 
+//si les particules sont détruites et les robots rentrent à la maison, la mission
+//est réussie
+void Simulation::simulation_fin(){
+	if (robots_neutr.size() == 0 and robots_rep.size()== 0 and particules.size()==0){
+		cout<<"FIN DE LA SIMULATION"<<endl;
+		fin_simu = true;
+	}
+}
 
-  
+R_spatial Simulation::getRs() const{
+	return rs;
+}
+
+vector<Particule> Simulation::getParticules() const{
+	return particules;
+}
+
+bool Simulation::getError_simu() const{
+	return bool_error;
+}
+
+bool Simulation::get_simu_fin() const{
+	return fin_simu;
+}
+
+void Simulation::setRsNbUpdate(int newNbUpdate) {
+    rs.setNbUpdate(newNbUpdate);
+}

@@ -1,8 +1,8 @@
 /*!
   \file   graphic.h
   \author Charly Guardia 0%, Gauthier de Mercey 100%
-  \date   avril 2023
-  \version 2
+  \date   mai 2023
+  \version 3
 */
 
 #ifndef GTKMM_EXAMPLE_MYAREA_H
@@ -10,14 +10,13 @@
 
 #include <gtkmm/drawingarea.h>
 #include <gdkmm/pixbuf.h>
-#include "constantes.h"
 #include <cairomm/context.h>
 #include <giomm/resource.h>
 #include <gdkmm/general.h> // set_source_pixbuf()
 #include <glibmm/fileutils.h>
 
 void graphic_set_context(const Cairo::RefPtr<Cairo::Context>& cr);
-void empty_world();
+void empty_world(double dmax_);
 void draw_filled_square(double longueur_cote, double x, double y);
 void set_color(int indice);
 void draw_dot(double x, double y);

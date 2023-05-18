@@ -1,8 +1,8 @@
 /*!
   \file   shape.h
   \author Charly  Guardia 70%, Gauthier de Mercey 30%
-  \date   avril 2023
-  \version 2
+  \date   mai 2023
+  \version 3
 */
 
 
@@ -46,5 +46,7 @@ double s2d_norm(S2d pos);
 
 bool intersects(const Square& square, const Circle& cercle);
 
-#endif
+S2d s2d_scale(const S2d& v, double scalar);
+S2d s2d_subtract(const S2d& a, const S2d& b);
 
+#endif

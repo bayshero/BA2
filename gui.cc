@@ -1,8 +1,8 @@
 /*!
   \file   gui.cc
   \author Charly Guardia 50%, Gauthier de Mercey 50%
-  \date   avril 2023
-  \version 2
+  \date   mai 2023
+  \version 3
 */
 
 #include "gui.h"
@@ -25,7 +25,8 @@ Gui::Gui(const std::string& filename):
 	disconnect(false), 	// sert de relai pour une demande d'arret du timer
 	timeout_value(250), // 250 ms = 0.250 seconds
 	counter(0),
-	started(false)
+	started(false),
+	stop(false)
 {
 	//initialisation simulation
 	this->filename = filename;
@@ -267,22 +268,24 @@ void Gui::on_file_dialog_response_save(int response_id,Gtk::FileChooserDialog* d
 //bouton start
 void Gui::on_button_start_clicked(){
 	
-    started = !started; 
+	if (!stop){
+		started = !started; 
 
-    if (started){
-        button_start.set_label("stop");
-        if (!timer_added){
-            sigc::slot<bool()> my_slot = sigc::bind(sigc::mem_fun(*this,
-                                         &Gui::on_timeout));
-            auto conn = Glib::signal_timeout().connect(my_slot, timeout_value);
-            timer_added = true;
-        }
-    } else {
-        button_start.set_label("start");
-        counter = 0; // le counter est remis à 0 quand on clique sur stop
-        disconnect = true;
-        timer_added = false;
-    }
+		if (started){
+			button_start.set_label("stop");
+			if (!timer_added){
+				sigc::slot<bool()> my_slot = sigc::bind(sigc::mem_fun(*this,
+											 &Gui::on_timeout));
+				auto conn = Glib::signal_timeout().connect(my_slot, timeout_value);
+				timer_added = true;
+			}
+		} else {
+			button_start.set_label("start");
+			counter = 0; // le counter est remis à 0 quand on clique sur stop
+			disconnect = true;
+			timer_added = false;
+		}
+	}
 }
 
 
@@ -305,6 +308,10 @@ bool Gui::on_timeout(){
     
     //update le dessin
     m_area.queue_draw();
+    
+    if (simu.get_simu_fin()){
+			stop = true;
+		}
 	
 	return true;
 }
@@ -312,7 +319,7 @@ bool Gui::on_timeout(){
 //bouton step
 void Gui::on_button_step_clicked(){
 	//bouton step fonctionne que si started vaut false
-    if (!started) {
+    if ((!started) and (!stop)) {
 		
         // fais une single update
         int nbUpdate_ = simu.getRs().getNbUpdate() + 1;
@@ -323,6 +330,9 @@ void Gui::on_button_step_clicked(){
         simu.lance_simulation();
         m_area.queue_draw();
 		update_infos();
+		if (simu.get_simu_fin()){
+			stop = true;
+		}
     }
 }	
 
@@ -430,7 +440,7 @@ void MyArea::on_draw(const Cairo::RefPtr<Cairo::Context>& cr,const int width,
 	orthographic_projection(cr, frame);
 	graphic_set_context(cr);
 	//initaialise monde
-	empty_world();
+	empty_world(dmax);
 	//dessine les objets, s'il y en a
 	simu.draw_world();
 }

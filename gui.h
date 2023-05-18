@@ -1,8 +1,8 @@
 /*!
   \file   gui.h
   \author Charly Guardia 50%, Gauthier de Mercey 50%
-  \date   avril 2023
-  \version 2
+  \date   mai 2023
+  \version 3
 */
 
 #ifndef GTKMM_GUI_H
@@ -16,7 +16,6 @@
 #include <gtkmm/separator.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/frame.h>
-#include "gui.h"
 #include "simulation.h"
 #include "graphic.h"
 #include <string>
@@ -91,6 +90,8 @@ protected:
 	const int timeout_value; 
 	unsigned int counter;
 	bool started;
+	
+	bool stop;
 
 	void monde_faux();
 	

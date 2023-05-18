@@ -1,8 +1,8 @@
 /*!
   \file   robot.h
-  \author Charly Guardia 95%, Gauthier de Mercey 5%
-  \date   avril 2023
-  \version 2
+  \author Charly Guardia 50%, Gauthier de Mercey 50%
+  \date   mai 2023
+  \version 3
 */
 
 #ifndef ROBOT_H
@@ -95,6 +95,7 @@ private:
 public:
 	R_neutraliseur(Circle c, double a, int k_update_, bool panne_, int c_n_);
 	R_neutraliseur(Circle c, int c_n);
+	
 	int getKupdate() const;
 	int getPanne() const;
 	S2d getGoal() const;
@@ -106,6 +107,11 @@ public:
 	bool getOriented() const{return oriented;}
 	bool getOriented2() const{return oriented2;}
 	double getD_zone_a_eviter() const;
+	bool isInCollisionWithParticle() const;
+    bool isInCollisionWithNeutrRobot() const;
+    bool isInCollisionWithRepRobot() const;
+	int getCollisionParticleIndex() const;
+	double getAngleDeltaInCollision() const;
 	
 	void setGoal(S2d newGoal);
 	void setBoolGoal(bool boolGoal);
@@ -123,11 +129,6 @@ public:
 	void setD_zone_a_eviter(double newD_zone_a_eviter);
 	void setParticuleCible(Square newParticuleCible);
 	
-	bool isInCollisionWithParticle() const { return in_collision_with_particle; }//CHANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    bool isInCollisionWithNeutrRobot() const { return in_collision_with_neutr_robot; }
-    bool isInCollisionWithRepRobot() const { return in_collision_with_rep_robot; }
-	int getCollisionParticleIndex() const { return collisionParticleIndex; }
-	double getAngleDeltaInCollision() const {return angle_data_in_collision; }
 	bool isAlignedWithParticle(const S2d& particle_center) const;
 	
 	bool superposition_r_neutre(const R_neutraliseur& r) const;
@@ -136,12 +137,9 @@ public:
 	
 	std::string get_as_string();
 	void draw_robot_neutr();
-	
-	void move_neutr_to(const std::vector<Particule>& particules,
-					   const std::vector<R_neutraliseur>& robots_neutr,
-					   const std::vector<R_reparateur>& robots_rep);
-	
+
 	void normalize_angle(Orient& delta_a);
+	Orient get_desired_orientation(const Square& particle_square);
 	
 	//type de coordination 0				   
 	void type0(const std::vector<Particule>& particules,
@@ -151,9 +149,10 @@ public:
 	Orient update_orientation(const std::vector<Particule>& particules);
 	bool is_orientation_correct0(const Orient& goal_a);
 	
-	void update_collision_status0(const Circle& new_circle, const std::vector<Particule>& particules,
-                                 const std::vector<R_neutraliseur>& robots_neutr,
-                                 const std::vector<R_reparateur>& robots_rep);
+	void update_collision_status0(const Circle& new_circle,
+								  const std::vector<Particule>& particules,
+                                  const std::vector<R_neutraliseur>& robots_neutr,
+                                  const std::vector<R_reparateur>& robots_rep);
                                  
 	void translate_towards_goal0(const std::vector<Particule>& particules,
                                  const std::vector<R_neutraliseur>& robots_neutr,
@@ -162,7 +161,8 @@ public:
     void type1(const std::vector<Particule>& particules,
 			   const std::vector<R_neutraliseur>& robots_neutr, 
 			   const std::vector<R_reparateur>& robots_rep);	
-	void update_collision_status1(const Circle& new_circle, const std::vector<Particule>& particules,
+	void update_collision_status1(const Circle& new_circle, 
+								  const std::vector<Particule>& particules,
                                   const std::vector<R_neutraliseur>& robots_neutr,
                                   const std::vector<R_reparateur>& robots_rep);
                                  					                              
@@ -207,11 +207,6 @@ public :
 	void setBoolGoal(bool boolGoal);
 	void setPanneIndex(int newIndex);
 };
-
-S2d s2d_scale(const S2d& v, double scalar);
-S2d s2d_subtract(const S2d& a, const S2d& b);
-
-Orient get_desired_orientation(const Circle& robot_circle, const Square& particle_square);
 
 #endif	
 		

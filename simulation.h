@@ -1,8 +1,8 @@
 /*!
   \file   simulation.h
   \author Charly Guardia 60%, Gauthier de Mercey 40%
-  \date   avril 2023
-  \version 2
+  \date   mai 2023
+  \version 3
 */
 
 #ifndef SIMULATION_H
@@ -42,13 +42,15 @@ public :
 	vector<Particule> getParticules() const;
 	R_spatial getRs() const;
 	bool getError_simu() const;
-	
-	void delete_simu();
-	void save(string save_filename);
+	bool get_simu_fin() const;
 	
 	//fonctions setters
 	void setRsNbUpdate(int newNbUpdate);
 	void set_nbNp();
+	
+	
+	void delete_simu();
+	void save(string save_filename);
 	
 	//simulation
 	void lance_simulation();
@@ -59,6 +61,7 @@ public :
 	
 	void robots_neutr_cible();
 	void robots_rep_cible();
+	void robot_neutr_set_stats(int index, Square s1);
 	void triParticule();
 	
 	void robot_bouge();
@@ -68,9 +71,9 @@ public :
 	bool verifie_si_spawn_vide();
 	void r_neutr_check();
 	bool is_particle_targeted(const S2d& particle_center);
+	void simulation_fin();
 	
 	void draw_world();
-	
 	
 private :
 	static vector<Particule> particules;
@@ -78,6 +81,7 @@ private :
 	static vector<R_reparateur> robots_rep;
 	static R_spatial rs;
 	bool bool_error; //false si il y a une erreur détectée dans la simulation
+	bool fin_simu;
 
 };
 

@@ -1,8 +1,8 @@
 /*!
   \file   projet.cc
   \author Charly Guardia 100%, Gauthier de Mercey 0%
-  \date   avril 2023
-  \version 2
+  \date   mai 2023
+  \version 3
 */
 
 #include <iostream>
