@@ -26,6 +26,7 @@ vector<Particule> Simulation::particules;
 vector<R_neutraliseur> Simulation::robots_neutr;
 vector<R_reparateur> Simulation::robots_rep;
 R_spatial Simulation::rs;
+bool Simulation::fin_simu;
 
 static default_random_engine e;
 
@@ -327,7 +328,7 @@ void Simulation::lance_simulation() {
     
     //robot spatial prend des décisions
 	creation_robots();
-    robots_neutr_cible(); //SEG FAUTL
+    robots_neutr_cible();
     robots_rep_cible();
     
     //mouvement robots
@@ -364,6 +365,7 @@ void Simulation::delete_simu(){
 	robots_neutr.clear();
 	robots_rep.clear();
 	rs.delete_rs();
+	fin_simu = false;
 }
 
 //initaliase le nb de robots en panne grâce à la variable booléenne des robots neutr.
@@ -460,7 +462,6 @@ void Simulation::robots_rep_cible(){
 												 (minDistanceIndex != -1)){
 				robots_rep[minDistanceIndex].setGoal(robot_neutr.getCircle().centre);
 				robots_rep[minDistanceIndex].setBoolGoal(true);
-				//robots_rep[minDistanceIndex].setPanneIndex(i);
 				robot_neutr.setRepEnchemin(true);
 			} 
 		}
@@ -477,15 +478,13 @@ void Simulation::creation_robots(){
 	}
 	int i_n = rs.getNbNs() + rs.getNbNd();
 	unsigned int nbRobot_panne(rs.getNbNp());
-	//creation de robots lorsque compteur de mises a jour est multiple de modulo_update
 	if ((rs.getNbUpdate()%modulo_update)==0){
-		//on crée un robot neutr. s'il y a plus de particules que de neutraliseurs
+	//creation de robots lorsque compteur de mises a jour est multiple de modulo_update
 		if (rs.getNbNr() > 0){
-			//IL DOIT AU MOINS Y AVOIR 1 ROBOT NEUTR PAR TYPE DE COORDINATION //A FAIRE
-			//il doit rester des robots neutr. en reserve pour en créer
+		//il doit rester des robots neutr. en reserve pour en créer
 			if (particules.size() > robots_neutr.size()){
-				Circle c1 = {r_neutraliseur,rs.getCircle().centre};
-				cout<<"CREATION D'UN ROBOT DE TYPE : "<<i_n%3<<endl;
+			//on crée un robot neutr. s'il y a plus de particules que de neutraliseurs
+				Circle c1 = {r_neutraliseur, rs.getCircle().centre};
 				R_neutraliseur rn(c1,i_n%3);
 				robots_neutr.push_back(rn);
 				rs.setNbNr(rs.getNbNr()-1);
@@ -495,7 +494,7 @@ void Simulation::creation_robots(){
 		} else if ((nbRobot_panne) > robots_rep.size()){
 			//il doit rester des robots rep. en reserve pour en créer
 			if (rs.getNbRr() > 0) {
-				Circle c2 = {r_reparateur,rs.getCircle().centre};
+				Circle c2 = {r_reparateur, rs.getCircle().centre};
 				R_reparateur rr(c2);
 				robots_rep.push_back(rr);
 				rs.setNbRr(rs.getNbRr()-1);

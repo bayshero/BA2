@@ -212,6 +212,7 @@ void Gui::on_file_dialog_response_open(int response_id,Gtk::FileChooserDialog* d
 				maj_label(nbUpdate_);
 				update_infos();
 				m_area.queue_draw();
+				stop = simu.get_simu_fin();
 			} else {
 				monde_faux();
 			}

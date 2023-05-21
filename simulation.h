@@ -81,7 +81,7 @@ private :
 	static vector<R_reparateur> robots_rep;
 	static R_spatial rs;
 	bool bool_error; //false si il y a une erreur détectée dans la simulation
-	bool fin_simu;
+	static bool fin_simu;
 
 };
 
